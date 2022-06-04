@@ -11,8 +11,4 @@
       <ProjectReference Include="..\Language.Common\Language.Common.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Operations" />
-    </ItemGroup>
-
 </Project>

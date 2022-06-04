@@ -1,6 +1,6 @@
 ﻿namespace Language.Api.Syntax;
 
-public abstract partial class CompositeSyntaxElement : SyntaxElement
+public abstract partial class CompositeSyntaxElement : SyntaxElement, ICompositeSyntaxElement
 {
     private readonly LinkedList<SyntaxElement> _children;
 
@@ -13,6 +13,6 @@ public abstract partial class CompositeSyntaxElement : SyntaxElement
 
     public ICompositeOperation Make(SyntaxElement syntaxElement)
     {
-        return new CompositeSyntaxElement.CompositeOperation(this, syntaxElement);
+        return new CompositeOperation(this, syntaxElement);
     }
 }

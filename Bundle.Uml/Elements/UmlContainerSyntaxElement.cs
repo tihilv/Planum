@@ -2,7 +2,7 @@
 
 namespace Bundle.Uml.Elements;
 
-public class UmlContainerSyntaxElement : CompositeSyntaxElement
+public class UmlContainerSyntaxElement : CompositeSyntaxElement, IGroupSyntaxElement
 {
     public readonly UmlContainerType Type;
     public readonly string Name;
@@ -13,3 +13,4 @@ public class UmlContainerSyntaxElement : CompositeSyntaxElement
         Name = name;
     }
 }
+

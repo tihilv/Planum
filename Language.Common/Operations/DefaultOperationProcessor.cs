@@ -2,7 +2,7 @@
 using Language.Api.Operations;
 using Language.Api.Semantic;
 
-namespace Language.Common.Semantic;
+namespace Language.Common.Operations;
 
 public class DefaultOperationProcessor: IOperationProcessor
 {

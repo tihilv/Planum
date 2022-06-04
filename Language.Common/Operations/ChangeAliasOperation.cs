@@ -1,5 +1,6 @@
 ﻿using Language.Api.Operations;
 using Language.Api.Semantic;
+using Language.Common.Semantic;
 
 namespace Language.Common.Operations;
 
@@ -15,7 +16,7 @@ public class ChangeAliasOperation : IOperation
 
     public Boolean CanExecute(IEnumerable<ISemanticElement> elements)
     {
-        return elements.OfType<IAliased>().Any();
+        return elements.OfType<IAliasedSemantic>().Any();
     }
 
     public void Execute(ISemanticElement[] allElements, IEnumerable<ISemanticElement> selectedElements, Object[] arguments)
@@ -23,7 +24,7 @@ public class ChangeAliasOperation : IOperation
         var newAlias = (String)arguments[0];
 
         foreach (var selectedElement in selectedElements)
-            if (selectedElement is IAliased textedElement)
+            if (selectedElement is IAliasedSemantic textedElement)
                 textedElement.Alias = newAlias;
     }
 }

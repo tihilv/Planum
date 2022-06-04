@@ -1,5 +1,6 @@
 ﻿using Language.Api.Operations;
 using Language.Api.Semantic;
+using Language.Common.Semantic;
 
 namespace Language.Common.Operations;
 
@@ -15,7 +16,7 @@ public class ChangeTextOperation : IOperation
 
     public Boolean CanExecute(IEnumerable<ISemanticElement> elements)
     {
-        return elements.OfType<ITexted>().Any();
+        return elements.OfType<ITextedSemantic>().Any();
     }
 
     public void Execute(ISemanticElement[] allElements, IEnumerable<ISemanticElement> selectedElements, Object[] arguments)
@@ -23,7 +24,7 @@ public class ChangeTextOperation : IOperation
         var newText = (String)arguments[0];
 
         foreach (var selectedElement in selectedElements)
-            if (selectedElement is ITexted textedElement)
+            if (selectedElement is ITextedSemantic textedElement)
                 textedElement.Text = newText;
     }
 }

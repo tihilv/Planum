@@ -71,8 +71,8 @@ public class UmlSyntaxElement : SyntaxElement, IEquatable<UmlSyntaxElement>
         return sb.ToString();
     }
 
-    public UmlSyntaxElement With(UmlFigure? firstFigure = null, UmlFigure? secondFigure = null)
+    public UmlSyntaxElement With(UmlFigure? firstFigure = null, Arrow? arrow = null, UmlFigure? secondFigure = null)
     {
-        return new UmlSyntaxElement(firstFigure ?? FirstFigure, Arrow, secondFigure ?? SecondFigure, Comment);
+        return new UmlSyntaxElement(firstFigure ?? FirstFigure, arrow??Arrow, secondFigure ?? SecondFigure, Comment);
     }
 }

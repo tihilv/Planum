@@ -1,8 +1,9 @@
 ﻿using Language.Api;
 using Language.Api.Semantic;
 using Language.Api.Syntax;
+using Language.Api.Transfers;
 
-namespace Language.Common.Semantic;
+namespace Language.Common.Transfers;
 
 public class DefaultSemanticConverter : ISemanticConverter
 {

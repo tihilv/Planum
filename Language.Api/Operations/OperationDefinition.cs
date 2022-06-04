@@ -18,10 +18,12 @@ public struct ParameterDefinition
 {
     public readonly Type Type;
     public readonly string Text;
+    public readonly bool Optional;
 
-    public ParameterDefinition(Type type, String text)
+    public ParameterDefinition(Type type, string text, bool optional = false)
     {
         Type = type;
         Text = text;
+        Optional = optional;
     }
 }

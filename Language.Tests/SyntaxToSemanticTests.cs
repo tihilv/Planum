@@ -5,7 +5,7 @@ using Bundle.Uml.Semantic;
 using Language.Api.Syntax;
 using Language.Common;
 using Language.Common.Primitives;
-using Language.Common.Semantic;
+using Language.Common.Transfers;
 using Language.Tests.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -42,7 +42,7 @@ public class SyntaxToSemanticTests
         var semanticConverter = new DefaultSemanticConverter(builder);
         var result = semanticConverter.GetSemanticElements(model.rootElement).ToArray();
         
-        Assert.AreEqual(7, result.Length);
+        Assert.AreEqual(8, result.Length);
         var fcDefSem = result[0] as UmlFigureSemanticElement;
         Assert.IsNotNull(fcDefSem);
         Assert.AreEqual(SimpleTestSyntaxModel.fcName, fcDefSem.Text);
@@ -55,8 +55,8 @@ public class SyntaxToSemanticTests
         
         var fcToUc1Sem = result[2] as ArrowSemanticElement;
         Assert.IsNotNull(fcToUc1Sem);
-        Assert.AreEqual(fcDefSem, fcToUc1Sem.FirstFigureSemanticElement);
-        Assert.AreEqual(uc1DefSem, fcToUc1Sem.SecondFigureSemanticElement);
+        Assert.AreEqual(fcDefSem, fcToUc1Sem.FirstSemanticElement);
+        Assert.AreEqual(uc1DefSem, fcToUc1Sem.SecondSemanticElement);
 
         var uc2DefSem = result[3] as UmlFigureSemanticElement;
         Assert.IsNotNull(uc2DefSem);
@@ -65,8 +65,8 @@ public class SyntaxToSemanticTests
 
         var fcToUc2Sem = result[4] as ArrowSemanticElement;
         Assert.IsNotNull(fcToUc2Sem);
-        Assert.AreEqual(fcDefSem, fcToUc2Sem.FirstFigureSemanticElement);
-        Assert.AreEqual(uc2DefSem, fcToUc2Sem.SecondFigureSemanticElement);
+        Assert.AreEqual(fcDefSem, fcToUc2Sem.FirstSemanticElement);
+        Assert.AreEqual(uc2DefSem, fcToUc2Sem.SecondSemanticElement);
 
         var uc3DefSem = result[5] as UmlFigureSemanticElement;
         Assert.IsNotNull(uc3DefSem);
@@ -75,7 +75,12 @@ public class SyntaxToSemanticTests
 
         var fcToUc3Sem = result[6] as ArrowSemanticElement;
         Assert.IsNotNull(fcToUc3Sem);
-        Assert.AreEqual(fcDefSem, fcToUc3Sem.FirstFigureSemanticElement);
-        Assert.AreEqual(uc3DefSem, fcToUc3Sem.SecondFigureSemanticElement);
+        Assert.AreEqual(fcDefSem, fcToUc3Sem.FirstSemanticElement);
+        Assert.AreEqual(uc3DefSem, fcToUc3Sem.SecondSemanticElement);
+
+        var containerSem = result[7] as UmlContainerSemanticElement;
+        Assert.IsNotNull(containerSem);
+        Assert.AreEqual(SimpleTestSyntaxModel.containerName, containerSem.Id);
+        Assert.AreEqual(3, containerSem.GroupSyntaxElement.Children.Count);
     }
 }

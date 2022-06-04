@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Language.Api.Semantic;
+namespace Language.Api.Transfers;
 
 public class SyntaxToSemanticContext
 {

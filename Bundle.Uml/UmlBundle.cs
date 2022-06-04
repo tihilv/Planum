@@ -1,9 +1,10 @@
-﻿using Bundle.Uml.Parsers;
-using Bundle.Uml.Semantic;
+﻿using Bundle.Uml.Operations;
+using Bundle.Uml.Parsers;
 using Bundle.Uml.Tokenizer;
+using Bundle.Uml.Transfers;
 using Language.Api;
 using Language.Api.Operations;
-using Language.Api.Semantic;
+using Language.Api.Transfers;
 using Language.Common.Operations;
 using Language.Common.Parsers;
 
@@ -40,10 +41,16 @@ public class UmlBundle: IBundle
     {
         yield return ChangeTextOperation.Instance;
         yield return ChangeAliasOperation.Instance;
+        yield return ChangeArrowOperation.Instance;
+        yield return UngroupOperation.Instance;
+        yield return AddToGroupOperation.Instance;
+        yield return ExcludeFromGroupOperation.Instance;
+        yield return CreateUmlContainerOperation.Instance;
     }
 
     public IEnumerable<ISyntaxToSemanticTransfer> GetSyntaxToSemanticTransfers()
     {
+        yield return UmlContainerTransfer.Instance;
         yield return UmlFigureTransfer.Instance;
         yield return UmlArrowTransfer.Instance;
     }

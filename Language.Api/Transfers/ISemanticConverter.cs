@@ -1,6 +1,7 @@
-﻿using Language.Api.Syntax;
+﻿using Language.Api.Semantic;
+using Language.Api.Syntax;
 
-namespace Language.Api.Semantic;
+namespace Language.Api.Transfers;
 
 public interface ISemanticConverter
 {

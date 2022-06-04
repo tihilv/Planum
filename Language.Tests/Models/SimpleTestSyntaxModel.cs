@@ -15,6 +15,10 @@ internal class SimpleTestSyntaxModel
     public const string uc2Alias = "UC2";
     public const string uc3Name = "Drink";
     public const string uc3Alias = "UC3";
+    
+    public const string containerName = "Restaurant";
+
+    public static readonly Arrow defaultArrow = new Arrow(ArrowShape.No, ArrowShape.Arrow, 2);
 
     public readonly RootSyntaxElement rootElement;
     
@@ -30,9 +34,9 @@ internal class SimpleTestSyntaxModel
 
     public SimpleTestSyntaxModel()
     {
-        fcToUc1 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, fcAlias), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Actor, uc1Alias));
-        fcToUc2 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, fcAlias), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Actor, uc2Alias));
-        fcToUc3 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, fcAlias), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Actor, uc3Alias));
+        fcToUc1 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, fcAlias), defaultArrow, new UmlFigure(UmlFigureType.Actor, uc1Alias));
+        fcToUc2 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, fcAlias), defaultArrow, new UmlFigure(UmlFigureType.Actor, uc2Alias));
+        fcToUc3 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, fcAlias), defaultArrow, new UmlFigure(UmlFigureType.Actor, uc3Alias));
 
         fcDef = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, fcName, null, fcAlias));
 
@@ -46,7 +50,7 @@ internal class SimpleTestSyntaxModel
         rootElement.Make(fcToUc3).Last();
         rootElement.Make(fcDef).Last();
 
-        var rectElement = new UmlContainerSyntaxElement(UmlContainerType.Rectangle, "Restaurant");
+        var rectElement = new UmlContainerSyntaxElement(UmlContainerType.Rectangle, containerName);
         rootElement.Make(rectElement).Last();
         
         rectElement.Make(uc1Def).Last();

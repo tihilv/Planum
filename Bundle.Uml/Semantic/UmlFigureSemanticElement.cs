@@ -1,10 +1,11 @@
 ﻿using Bundle.Uml.Elements;
 using Language.Api.Semantic;
-using Language.Common.Operations;
+using Language.Api.Syntax;
+using Language.Common.Semantic;
 
 namespace Bundle.Uml.Semantic;
 
-public class UmlFigureSemanticElement: ISemanticElement, ITexted, IAliased
+public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAliasedSemantic, IGroupableSemantic
 {
     private readonly List<Usage> _usages;
     private string _text;
@@ -28,15 +29,15 @@ public class UmlFigureSemanticElement: ISemanticElement, ITexted, IAliased
     }
 
     public String Id => _alias ?? _text;
-    
-    
+    public IReadOnlyCollection<SyntaxElement> SyntaxElements => Usages.Select(u => u.SyntaxElement).ToArray();
+
+
     public UmlFigureSemanticElement(String name)
     {
         _text = name;
 
         _usages = new List<Usage>();
     }
-
 
     internal void Register(UmlSyntaxElement uml, UmlFigure figure)
     {
@@ -60,21 +61,36 @@ public class UmlFigureSemanticElement: ISemanticElement, ITexted, IAliased
         _text = newText;
     }
 
+    private Usage GetOrCreateDefinitiveUsage(out Usage? usageToTake)
+    {
+        usageToTake = null;
+        
+        var appropriateUsage = Usages.FirstOrDefault(u => u.SyntaxElement.Arrow == null && u.SyntaxElement.SecondFigure == null);
+        if (appropriateUsage == null)
+        {
+            usageToTake = Usages.MaxBy(u => u.Figure.Type);
+            var figure = usageToTake!.Figure;
+            UmlSyntaxElement newSyntaxElement = new UmlSyntaxElement(figure);
+            appropriateUsage = new Usage(newSyntaxElement, figure);
+        }
+
+        return appropriateUsage;
+    }
+    
     private void SetAlias(String newAlias)
     {
         if (string.IsNullOrEmpty(Alias))
         {
             // search for an appropriate usage
-            var appropriateUsage = Usages.FirstOrDefault(u => u.SyntaxElement.Arrow == null && u.SyntaxElement.SecondFigure == null);
-            if (appropriateUsage != null)
+            var appropriateUsage = GetOrCreateDefinitiveUsage(out var usageToTake);
+            if (usageToTake == null)
             {
                 ReplaceFigure(appropriateUsage, appropriateUsage.Figure.With(alias: newAlias));
             }
             else
             {
-                // create new Alias record
-                var usageToTake = Usages.MaxBy(u => u.Figure.Type);
-                var figure = usageToTake!.Figure.With(alias: newAlias);
+                // register new Alias record
+                var figure = appropriateUsage.Figure.With(alias: newAlias);
                 UmlSyntaxElement newSyntaxElement = new UmlSyntaxElement(figure);
                 usageToTake.SyntaxElement.Parent!.Make(newSyntaxElement).Before(Usages.First().SyntaxElement);
                 Usages.Insert(0, new Usage(newSyntaxElement, figure));
@@ -120,6 +136,14 @@ public class UmlFigureSemanticElement: ISemanticElement, ITexted, IAliased
         {
             SyntaxElement = syntaxElement;
             Figure = figure;
+        }
+    }
+
+    public IReadOnlyCollection<SyntaxElement> GroupableSyntaxElements
+    {
+        get
+        {
+            return new[] { GetOrCreateDefinitiveUsage(out _).SyntaxElement };
         }
     }
 }
