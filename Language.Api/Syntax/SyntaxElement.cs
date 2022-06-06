@@ -1,6 +1,6 @@
 ﻿namespace Language.Api.Syntax;
 
-public class SyntaxElement
+public abstract class SyntaxElement
 {
     public CompositeSyntaxElement? Parent { get; private set; }
 

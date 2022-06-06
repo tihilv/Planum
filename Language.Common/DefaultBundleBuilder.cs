@@ -1,5 +1,6 @@
 ﻿using Language.Api;
 using Language.Api.Operations;
+using Language.Api.Refactorings;
 using Language.Api.Transfers;
 
 namespace Language.Common;
@@ -9,7 +10,8 @@ public class DefaultBundleBuilder : IBundleBuilder
     private readonly Dictionary<string, ITokenizer> _tokenizers;
     private readonly Dictionary<string, List<IParser>> _parsers;
     private readonly Dictionary<string, List<IOperation>> _operations;
-    private List<ISyntaxToSemanticTransfer> _syntaxToSemanticTransfers;
+    private readonly List<ISyntaxToSemanticTransfer> _syntaxToSemanticTransfers;
+    private readonly List<ISyntaxRefactoring> _syntaxRefactorings;
 
     public DefaultBundleBuilder()
     {
@@ -17,6 +19,7 @@ public class DefaultBundleBuilder : IBundleBuilder
         _parsers = new Dictionary<String, List<IParser>>();
         _operations = new Dictionary<String, List<IOperation>>();
         _syntaxToSemanticTransfers = new List<ISyntaxToSemanticTransfer>();
+        _syntaxRefactorings = new List<ISyntaxRefactoring>();
     }
 
     public void RegisterBundle(IBundle bundle)
@@ -55,6 +58,8 @@ public class DefaultBundleBuilder : IBundleBuilder
         }
         
         _syntaxToSemanticTransfers.AddRange(bundle.GetSyntaxToSemanticTransfers());
+        
+        _syntaxRefactorings.AddRange(bundle.GetSyntaxRefactorings());
     }
     
     public ITokenizer GetTokenizer(String scopeName)
@@ -78,5 +83,10 @@ public class DefaultBundleBuilder : IBundleBuilder
     public IReadOnlyCollection<ISyntaxToSemanticTransfer> GetSyntaxToSemanticTransfers()
     {
         return _syntaxToSemanticTransfers;
+    }
+
+    public IReadOnlyCollection<ISyntaxRefactoring> GetRefactorings()
+    {
+        return _syntaxRefactorings;
     }
 }

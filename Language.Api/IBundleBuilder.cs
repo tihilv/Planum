@@ -1,4 +1,5 @@
 ﻿using Language.Api.Operations;
+using Language.Api.Refactorings;
 using Language.Api.Transfers;
 
 namespace Language.Api;
@@ -10,4 +11,5 @@ public interface IBundleBuilder
     IReadOnlyCollection<IParser> GetParsers(string scopeName);
     IReadOnlyDictionary<String, List<IOperation>> GetOperations();
     IReadOnlyCollection<ISyntaxToSemanticTransfer> GetSyntaxToSemanticTransfers();
+    IReadOnlyCollection<ISyntaxRefactoring> GetRefactorings();
 }

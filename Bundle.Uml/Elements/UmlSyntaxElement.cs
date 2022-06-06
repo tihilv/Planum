@@ -75,4 +75,6 @@ public class UmlSyntaxElement : SyntaxElement, IEquatable<UmlSyntaxElement>
     {
         return new UmlSyntaxElement(firstFigure ?? FirstFigure, arrow??Arrow, secondFigure ?? SecondFigure, Comment);
     }
+    
+    public bool IsSingleDefinition => Arrow == null && SecondFigure == null;
 }

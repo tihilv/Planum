@@ -34,4 +34,6 @@ public struct UmlFigure
     {
         return new UmlFigure(Type, text ?? Text, Stereotype, alias??Alias);
     }
+    
+    public bool IsSingleFigure => string.IsNullOrEmpty(Alias) && string.IsNullOrEmpty(Stereotype);
 }

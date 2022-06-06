@@ -1,9 +1,11 @@
 ﻿using Bundle.Uml.Operations;
 using Bundle.Uml.Parsers;
+using Bundle.Uml.Refactorings;
 using Bundle.Uml.Tokenizer;
 using Bundle.Uml.Transfers;
 using Language.Api;
 using Language.Api.Operations;
+using Language.Api.Refactorings;
 using Language.Api.Transfers;
 using Language.Common.Operations;
 using Language.Common.Parsers;
@@ -55,5 +57,11 @@ public class UmlBundle: IBundle
         yield return UmlContainerTransfer.Instance;
         yield return UmlFigureTransfer.Instance;
         yield return UmlArrowTransfer.Instance;
+    }
+
+    public IEnumerable<ISyntaxRefactoring> GetSyntaxRefactorings()
+    {
+        yield return SequenceRefactoring.Instance;
+        yield return DuplicateReferencesRemovalRefactoring.Instance;
     }
 }
