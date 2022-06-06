@@ -199,7 +199,7 @@ public class OperationTests
     }
     
     [TestMethod]
-    public void ExcludeFFromGroupTest()
+    public void ExcludeFromGroupTest()
     {
         var builder = new DefaultBundleBuilder();
         builder.RegisterBundle(UmlBundle.Instance);
@@ -220,5 +220,141 @@ public class OperationTests
         ExcludeFromGroupOperation.Instance.Execute(result, new [] {elementToExclude}, null);
         Assert.AreEqual(6, model.rootElement.Children.Count);
         Assert.AreEqual(model.uc2Def, model.rootElement.Children.ToArray()[4]);
+    }
+
+    [TestMethod]
+    public void SimpleMoveNextTest()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var rootElement = new RootSyntaxElement();
+        var fcToe1 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc1Alias));
+        var fcToe2 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc2Alias));
+        var fcToe3 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc3Alias));
+
+        rootElement.Make(fcToe1).Last();
+        rootElement.Make(fcToe2).Last();
+        rootElement.Make(fcToe3).Last();
+        
+        var semanticConverter = new DefaultSemanticConverter(builder);
+        var result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+
+        var elementToMove = result[1];
+        MoveNextOperation.Instance.Execute(result, new [] {elementToMove}, null);
+        result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+        Assert.AreEqual(7, result.Length);
+        Assert.AreEqual(SimpleTestSyntaxModel.fcAlias, ((ITextedSemantic)result[0]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc2Alias, ((ITextedSemantic)result[1]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc1Alias, ((ITextedSemantic)result[2]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc3Alias, ((ITextedSemantic)result[5]).Text);
+    }
+
+    
+    [TestMethod]
+    public void CombinedMoveNextTest()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var rootElement = new RootSyntaxElement();
+        var e1toe2 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc1Alias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc2Alias));
+        var e3 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc3Alias));
+
+        rootElement.Make(e1toe2).Last();
+        rootElement.Make(e3).Last();
+        
+        var semanticConverter = new DefaultSemanticConverter(builder);
+        var result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+
+        var elementToMove = result[1];
+        MoveNextOperation.Instance.Execute(result, new [] {elementToMove}, null);
+        result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+        Assert.AreEqual(4, result.Length);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc1Alias, ((ITextedSemantic)result[0]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc3Alias, ((ITextedSemantic)result[1]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc2Alias, ((ITextedSemantic)result[2]).Text);
+    }
+    
+    [TestMethod]
+    public void SimpleMovePrevTest()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var rootElement = new RootSyntaxElement();
+        var fcToe1 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc1Alias));
+        var fcToe2 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc2Alias));
+        var fcToe3 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc3Alias));
+
+        rootElement.Make(fcToe1).Last();
+        rootElement.Make(fcToe2).Last();
+        rootElement.Make(fcToe3).Last();
+        
+        var semanticConverter = new DefaultSemanticConverter(builder);
+        var result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+
+        var elementToMove = result[1];
+        MovePrevOperation.Instance.Execute(result, new [] {elementToMove}, null);
+        result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+        Assert.AreEqual(7, result.Length);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc1Alias, ((ITextedSemantic)result[0]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.fcAlias, ((ITextedSemantic)result[1]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc2Alias, ((ITextedSemantic)result[3]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc3Alias, ((ITextedSemantic)result[5]).Text);
+    }
+    
+    [TestMethod]
+    public void SimpleSecondMovePrevTest()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var rootElement = new RootSyntaxElement();
+        var fcToe1 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc1Alias));
+        var fcToe2 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc2Alias));
+        var fcToe3 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.fcAlias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc3Alias));
+
+        rootElement.Make(fcToe1).Last();
+        rootElement.Make(fcToe2).Last();
+        rootElement.Make(fcToe3).Last();
+        
+        var semanticConverter = new DefaultSemanticConverter(builder);
+        var result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+
+        var elementToMove = result[3];
+        MovePrevOperation.Instance.Execute(result, new [] {elementToMove}, null);
+        result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+        Assert.AreEqual(7, result.Length);
+        Assert.AreEqual(SimpleTestSyntaxModel.fcAlias, ((ITextedSemantic)result[0]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc2Alias, ((ITextedSemantic)result[1]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc1Alias, ((ITextedSemantic)result[2]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc3Alias, ((ITextedSemantic)result[5]).Text);
+    }
+
+    
+    [TestMethod]
+    public void CombinedMovePrevTest()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var rootElement = new RootSyntaxElement();
+        var e1toe2 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc1Alias), SimpleTestSyntaxModel.defaultArrow, new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc2Alias));
+        var e3 = new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, SimpleTestSyntaxModel.uc3Alias));
+
+        rootElement.Make(e1toe2).Last();
+        rootElement.Make(e3).Last();
+        
+        var semanticConverter = new DefaultSemanticConverter(builder);
+        var result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+
+        var elementToMove = result[3];
+        MovePrevOperation.Instance.Execute(result, new [] {elementToMove}, null);
+        result = semanticConverter.GetSemanticElements(rootElement).ToArray();
+        Assert.AreEqual(4, result.Length);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc1Alias, ((ITextedSemantic)result[0]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc3Alias, ((ITextedSemantic)result[1]).Text);
+        Assert.AreEqual(SimpleTestSyntaxModel.uc2Alias, ((ITextedSemantic)result[2]).Text);
     }
 }

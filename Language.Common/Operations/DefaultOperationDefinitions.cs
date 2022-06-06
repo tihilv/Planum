@@ -11,4 +11,6 @@ public static class DefaultOperationDefinitions
     public static readonly OperationDefinition Ungroup = new OperationDefinition("GROUP.UNGROP", "Ungroup");
     public static readonly OperationDefinition AddToGroup = new OperationDefinition("GROUP.ADDTO", "Add to group");
     public static readonly OperationDefinition ExcludeFromGroup = new OperationDefinition("GROUP.EXCLUDEFROM", "Exclude from group");
+    public static readonly OperationDefinition MoveElementNext = new OperationDefinition("NEXT.MOVE", "Move element next");
+    public static readonly OperationDefinition MoveElementPrev = new OperationDefinition("PREV.MOVE", "Move element back");
 }

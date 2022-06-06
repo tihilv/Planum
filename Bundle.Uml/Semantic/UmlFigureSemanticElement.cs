@@ -16,10 +16,7 @@ public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAlias
     public String Text
     {
         get { return _text; }
-        set
-        {
-            SetText(value);
-        }
+        set { SetText(value); }
     }
 
     public String? Alias

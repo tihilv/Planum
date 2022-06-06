@@ -26,7 +26,8 @@ public class UmlFigureTransfer : IFinishableSyntaxToSemanticTransfer
             if (uml.SecondFigure != null)
             {
                 var figure2 = contextData.Register(uml, uml.SecondFigure.Value);
-                yield return figure2;
+                if (figure2 != null)
+                    yield return figure2;
             }
         }
     }

@@ -46,6 +46,8 @@ public class UmlBundle: IBundle
         yield return AddToGroupOperation.Instance;
         yield return ExcludeFromGroupOperation.Instance;
         yield return CreateUmlContainerOperation.Instance;
+        yield return MoveNextOperation.Instance;
+        yield return MovePrevOperation.Instance;
     }
 
     public IEnumerable<ISyntaxToSemanticTransfer> GetSyntaxToSemanticTransfers()
