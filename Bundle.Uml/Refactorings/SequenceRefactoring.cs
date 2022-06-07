@@ -17,7 +17,7 @@ public class SequenceRefactoring: ISyntaxRefactoring
     
     public void Refactor(ICompositeSyntaxElement compositeSyntaxElement)
     {
-        Dictionary<string, UmlSyntaxElementWithPosition> elements = new Dictionary<String, UmlSyntaxElementWithPosition>();
+        var elements = new Dictionary<String, UmlSyntaxElementWithPosition>();
         int index = 0;
         foreach (var syntaxElement in compositeSyntaxElement.Children.ToArray())
         {
@@ -29,16 +29,14 @@ public class SequenceRefactoring: ISyntaxRefactoring
                     var existingElement = FindExistingElement(elements, umlSyntaxElement.FirstFigure);
                     if (existingElement != null)
                     {
-                        if (existingElement.Element.FirstFigure.Equals(umlSyntaxElement.FirstFigure))
+                        if (existingElement.Element.FirstFigure.Equals(umlSyntaxElement.FirstFigure) || existingElement.Element.SecondFigure?.Equals(umlSyntaxElement.FirstFigure) == true)
                         {
                             compositeSyntaxElement.Make(umlSyntaxElement).Deleted();
                             break;
                         }
                     }
 
-                    elements.Add(umlSyntaxElement.FirstFigure.Text, new UmlSyntaxElementWithPosition(umlSyntaxElement, index));
-                    if (!string.IsNullOrEmpty(umlSyntaxElement.FirstFigure.Alias))
-                        elements.Add(umlSyntaxElement.FirstFigure.Alias, new UmlSyntaxElementWithPosition(umlSyntaxElement, index));
+                    RegisterFigure(elements, umlSyntaxElement, umlSyntaxElement.FirstFigure, index);
                 }
                 else if (umlSyntaxElement.SecondFigure != null)
                 {
@@ -49,9 +47,19 @@ public class SequenceRefactoring: ISyntaxRefactoring
                         var lastElement = (firstExistingElement.Index > secondExistingElement.Index) ? firstExistingElement : secondExistingElement;
                         compositeSyntaxElement.Make(umlSyntaxElement).After(lastElement.Element);
                     }
+                    
+                    RegisterFigure(elements, umlSyntaxElement, umlSyntaxElement.FirstFigure, index);
+                    RegisterFigure(elements, umlSyntaxElement, umlSyntaxElement.SecondFigure.Value, index);
                 }
             }
         }
+    }
+    
+    private void RegisterFigure(Dictionary<String, UmlSyntaxElementWithPosition> elements, UmlSyntaxElement umlSyntaxElement, UmlFigure figure, int index)
+    {
+        elements.TryAdd(figure.Text, new UmlSyntaxElementWithPosition(umlSyntaxElement, index));
+        if (!string.IsNullOrEmpty(figure.Alias))
+            elements.TryAdd(figure.Alias, new UmlSyntaxElementWithPosition(umlSyntaxElement, index));
     }
 
     private UmlSyntaxElementWithPosition? FindExistingElement(Dictionary<String, UmlSyntaxElementWithPosition> elements, UmlFigure figure)

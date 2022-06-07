@@ -17,10 +17,23 @@ public class DuplicateReferencesRemovalRefactoring: ISyntaxRefactoring
     
     public void Refactor(ICompositeSyntaxElement compositeSyntaxElement)
     {
-        Dictionary<string, UmlSyntaxElementWithPosition> elements = new Dictionary<String, UmlSyntaxElementWithPosition>();
-        UmlSyntaxElement? lastElement = null;
-        foreach (var syntaxElement in compositeSyntaxElement.Children.Reverse().ToArray())
+        var elementPositions = new Dictionary<String, int>();
+        var children = compositeSyntaxElement.Children.ToArray();
+        for (int index = 0; index < children.Length; index++)
         {
+            var syntaxElement = children[index] as UmlSyntaxElement;
+            if (syntaxElement != null)
+            {
+                RegisterFigure(elementPositions, syntaxElement.FirstFigure, index);
+                if (syntaxElement.SecondFigure != null)
+                    RegisterFigure(elementPositions, syntaxElement.SecondFigure.Value, index);
+            }
+        }
+        
+        UmlSyntaxElement? lastElement = null;
+        for (int index = children.Length - 1; index >= 0; index--)
+        {
+            var syntaxElement = children[index];
             var umlSyntaxElement = syntaxElement as UmlSyntaxElement;
             if (umlSyntaxElement != null && lastElement != null)
             {
@@ -28,8 +41,13 @@ public class DuplicateReferencesRemovalRefactoring: ISyntaxRefactoring
                 {
                     if (lastElement.FirstFigure.Text == umlSyntaxElement.FirstFigure.Text || lastElement.SecondFigure?.Text == umlSyntaxElement.FirstFigure.Text)
                     {
-                        compositeSyntaxElement.Make(umlSyntaxElement).Deleted();
-                        umlSyntaxElement = lastElement;
+                        var firstIndex = FindFigureIndex(elementPositions, lastElement.FirstFigure)??index;
+                        var secondIndex = ((lastElement.SecondFigure != null) ? FindFigureIndex(elementPositions, lastElement.SecondFigure.Value) : null)??index;
+                        if (firstIndex <= secondIndex)
+                        {
+                            compositeSyntaxElement.Make(umlSyntaxElement).Deleted();
+                            umlSyntaxElement = lastElement;
+                        }
                     }
                 }
             }
@@ -38,26 +56,21 @@ public class DuplicateReferencesRemovalRefactoring: ISyntaxRefactoring
         }
     }
 
-    private UmlSyntaxElementWithPosition? FindExistingElement(Dictionary<String, UmlSyntaxElementWithPosition> elements, UmlFigure figure)
+    private void RegisterFigure(Dictionary<String, Int32> elementPositions, UmlFigure figure, Int32 index)
     {
-        if (elements.TryGetValue(figure.Text, out var element))
+        elementPositions.TryAdd(figure.Text, index);
+        if (!string.IsNullOrEmpty(figure.Alias))
+            elementPositions.TryAdd(figure.Alias, index);
+    }
+    
+    private int? FindFigureIndex(Dictionary<String, int> elementPositions, UmlFigure figure)
+    {
+        if (elementPositions.TryGetValue(figure.Text, out var element))
             return element;
 
-        if (!string.IsNullOrEmpty(figure.Alias) && elements.TryGetValue(figure.Alias, out element))
+        if (!string.IsNullOrEmpty(figure.Alias) && elementPositions.TryGetValue(figure.Alias, out element))
             return element;
 
         return null;
-    }
-    
-    private class UmlSyntaxElementWithPosition
-    {
-        public readonly UmlSyntaxElement Element;
-        public readonly int Index;
-
-        public UmlSyntaxElementWithPosition(UmlSyntaxElement element, Int32 index)
-        {
-            Element = element;
-            Index = index;
-        }
     }
 }
