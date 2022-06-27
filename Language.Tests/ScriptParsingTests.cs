@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Bundle.Uml;
 using Bundle.Uml.Elements;
-using Language.Api;
 using Language.Common;
 using Language.Common.Parsers;
 using Language.Common.Primitives;
@@ -19,25 +17,13 @@ public class ScriptParsingTests
     [TestMethod]
     public void SimpleProcessingTest()
     {
-        var sb = new StringBuilder();
-        sb.AppendLine("@startuml");
-        sb.AppendLine("left to right direction");
-        sb.AppendLine("actor \"Food Critic\" as fc");
-        sb.AppendLine("rectangle Restaurant {");
-        sb.AppendLine("    usecase \"Eat Food\" as UC1");
-        sb.AppendLine("    usecase \"Pay for Food\" as UC2");
-        sb.AppendLine("    usecase \"Drink\" as UC3");
-        sb.AppendLine("}");
-        sb.AppendLine("fc --> UC1");
-        sb.AppendLine("fc --> UC2");
-        sb.AppendLine("fc --> UC3");
-        sb.AppendLine("@enduml");
-        var script = new TextScript(sb.ToString());
+        var sb = GetSimpleScript();
+        var script = new TextScript(sb);
         
         var builder = new DefaultBundleBuilder();
         builder.RegisterBundle(UmlBundle.Instance);
         var interpreter = new ScriptInterpreter(script, builder);
-        interpreter.Process();
+        interpreter.UpdateSyntaxModel();
 
         var umlRoot = (UmlRootSyntaxElement)interpreter.RootSyntaxElement.Children.Single();
         Assert.AreEqual(6, umlRoot.Children.Count);
@@ -57,20 +43,39 @@ public class ScriptParsingTests
         Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, "fc"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Actor, "UC2")), (UmlSyntaxElement)rootChildren[4]);
         Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, "fc"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Actor, "UC3")), (UmlSyntaxElement)rootChildren[5]);
     }
-}
-
-class TextScript : IScript
-{
-    private readonly ScriptLine[] _lines;
-        
-    internal TextScript(string text)
-    {
-        var lines = text.Split(Environment.NewLine);
-        _lines = lines.Select((l, i) => new ScriptLine(i, l)).ToArray();
-    }
     
-    public IEnumerable<ScriptLine> GetLines()
+    [TestMethod]
+    public void SimpleSynthesizeTest()
     {
-        return _lines;
+        var sb = GetSimpleScript();
+        var script = new TextScript(sb);
+        
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+        var interpreter = new ScriptInterpreter(script, builder);
+        interpreter.UpdateSyntaxModel();
+
+        interpreter.UpdateScript();
+        var resultLines = script.GetLines().ToArray();
+        Assert.AreEqual(sb.Count, resultLines.Length);
+        Assert.IsTrue(Enumerable.SequenceEqual(sb, resultLines.Select(r=>r.Value)));
+    }
+
+    private static List<String> GetSimpleScript()
+    {
+        var sb = new List<String>();
+        sb.Add("@startuml");
+        sb.Add("left to right direction");
+        sb.Add("actor \"Food Critic\" as fc");
+        sb.Add("rectangle Restaurant {");
+        sb.Add("    usecase \"Eat Food\" as UC1");
+        sb.Add("    usecase \"Pay for Food\" as UC2");
+        sb.Add("    usecase \"Drink\" as UC3");
+        sb.Add("}");
+        sb.Add("fc --> UC1");
+        sb.Add("fc --> UC2");
+        sb.Add("fc --> UC3");
+        sb.Add("@enduml");
+        return sb;
     }
 }

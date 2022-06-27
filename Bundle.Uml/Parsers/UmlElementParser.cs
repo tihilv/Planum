@@ -1,5 +1,7 @@
+using System.Text;
 using Bundle.Uml.Elements;
 using Language.Api;
+using Language.Api.Syntax;
 using Language.Common.Primitives;
 
 namespace Bundle.Uml.Parsers;
@@ -29,16 +31,72 @@ public class UmlElementParser : IParser
 
         var arrow = GetArrow(tokens, ref index);
         UmlFigure? secondFigure = null;
+        string? url = null;
         if (arrow != null)
         {
             secondFigure = GetFigure(tokens, ref index);
+            if (secondFigure != null && !string.IsNullOrEmpty(secondFigure.Value.Url))
+            {
+                url = secondFigure.Value.Url;
+                secondFigure = secondFigure.Value.With(url: String.Empty);
+            }
         }
-
+        
         var comment = GetComment(tokens, ref index);
 
-        return new ParseResult(new UmlSyntaxElement(firstFigure.Value, arrow, secondFigure, comment));
+        return new ParseResult(new UmlSyntaxElement(firstFigure.Value, arrow, secondFigure, comment, url));
     }
 
+    public SynthesizeResult? Synthesize(SyntaxElement element)
+    {
+        if (element is UmlSyntaxElement el)
+        {
+            StringBuilder sb = new StringBuilder();
+            SynthesizeFigure(el.FirstFigure, sb);
+
+            if (el.Arrow != null)
+                sb.Append(ArrowParser.Instance.Synthesize(el.Arrow.Value));
+            
+            if (el.SecondFigure != null)
+                SynthesizeFigure(el.SecondFigure.Value, sb);
+
+            if (!string.IsNullOrEmpty(el.Comment))
+            {
+                sb.Append(" : ");
+                sb.Append(el.Comment);
+            }
+        }
+
+        return null;
+    }
+
+    private void SynthesizeFigure(UmlFigure figure, StringBuilder sb)
+    {
+        sb.Append(figure.Type);
+        sb.Append(" ");
+        sb.Append(figure.Text);
+        sb.Append(" ");
+        if (!string.IsNullOrEmpty(figure.Alias))
+        {
+            sb.Append("as ");
+            sb.Append(figure.Alias);
+        }
+
+        if (!string.IsNullOrEmpty(figure.Stereotype))
+        {
+            sb.Append(" <<");
+            sb.Append(figure.Stereotype);
+            sb.Append(">>");
+        }
+
+        if (!string.IsNullOrEmpty(figure.Url))
+        {
+            sb.Append(" [[");
+            sb.Append(figure.Url);
+            sb.Append("]]");
+        }
+    }
+    
     private UmlFigure? GetFigure(Token[] tokens, ref int index)
     {
         if (tokens.Length <= index)
@@ -80,14 +138,21 @@ public class UmlElementParser : IParser
         }
 
         string? stereotype = null;
-        if (tokens.Length > index)
+        if (tokens.Length > index && tokens[index].Value.StartsWith("<<") && tokens[index].Value.EndsWith(">>"))
         {
-            if (tokens[index].Value.StartsWith("<<") && tokens[index].Value.EndsWith(">>"))
-                stereotype = tokens[index].Value.Substring(2, tokens[index].Value.Length - 4).Trim();
+            stereotype = tokens[index].Value.Substring(2, tokens[index].Value.Length - 4).Trim();
+            index++;
         }
 
+        string? url = null;
+        if (tokens.Length > index && tokens[index].Value.StartsWith("[[") && tokens[index].Value.EndsWith("]]"))
+        {
+            url = tokens[index].Value.Substring(2, tokens[index].Value.Length - 4).Trim();
+            index++;
+        }
+        
         figureName = figureName.Trim('"');
-        return new UmlFigure(figureType, figureName, stereotype, alias);
+        return new UmlFigure(figureType, figureName, stereotype, alias, url);
     }
 
     private Arrow? GetArrow(Token[] tokens, ref Int32 index)

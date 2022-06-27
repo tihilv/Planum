@@ -11,7 +11,7 @@ public class ScriptInterpreter
 
     private readonly ScriptAssociations _associations;
     
-    public CompositeSyntaxElement RootSyntaxElement { get; private set; }
+    public RootSyntaxElement RootSyntaxElement { get; private set; }
 
     public ScriptInterpreter(IScript script, IBundleBuilder bundleBuilder)
     {
@@ -21,11 +21,11 @@ public class ScriptInterpreter
         _associations = new ScriptAssociations();
     }
 
-    public void Process()
+    public void UpdateSyntaxModel()
     {
         var scopeStack = new Stack<ScriptScope>();
         var scope = GetRootScriptScope();
-        RootSyntaxElement = scope.CurrentSyntaxElement;
+        RootSyntaxElement = (RootSyntaxElement)scope.CurrentSyntaxElement;
         
         foreach (var line in _script.GetLines())
         {
@@ -41,6 +41,8 @@ public class ScriptInterpreter
                         if (!finalResult.Equals(ParseResult.EmptyResult))
                             throw new LineException(line, $"Unexpected answer from the final parser '{scope.FinalParser.GetType().Name}'");
 
+                        _associations.RegisterFinalResult(line, scope.CurrentSyntaxElement);
+                        
                         scope = scopeStack.Pop();
                         continue;
                     }
@@ -53,7 +55,7 @@ public class ScriptInterpreter
                     {
                         var element = result.Value.SyntaxElement;
                         scope.CurrentSyntaxElement.Make(element).Last();
-                        _associations.Register(line, parser, element);
+                        _associations.Register(line, parser, element, result?.NewScopeResult?.Name);
 
                         if (result.Value.NewScopeResult != null)
                         {
@@ -69,6 +71,67 @@ public class ScriptInterpreter
                     }
                 }
             }
+        }
+    }
+
+    public void UpdateScript()
+    {
+        var lineIndex = 0;
+        var parsers = _bundleBuilder.GetParsers(String.Empty);
+        ConvertElementToScript(RootSyntaxElement, parsers, ref lineIndex);
+        _script.Trim(lineIndex);
+    }
+
+    private void ConvertElementToScript(SyntaxElement element, IReadOnlyCollection<IParser> parsers, ref int lineIndex)
+    {
+        ScriptLine? line = null;
+        SynthesizeNewScopeResult? synthesizeNewScopeResult = null;
+        var pair = _associations.FindScriptLines(element);
+        if (pair != null)
+        {
+            line = pair.Value.Item1;
+            synthesizeNewScopeResult = pair.Value.Item2;
+        }
+
+        IParser? parserToRegister = null;
+        if (line == null)
+        {
+            foreach (var parser in parsers)
+            {
+                var synthesizeResult = parser.Synthesize(element);
+                if (synthesizeResult != null)
+                {
+                    line = new ScriptLine(-1, synthesizeResult.Value.Text);
+                    synthesizeNewScopeResult = synthesizeResult.Value.NewScopeResult;
+                    parserToRegister = parser;
+                    break;
+                }
+            }
+        }
+
+        if (line != null)
+        {
+            var newLine = _script.SetLine(line.Value, lineIndex++);
+            if (parserToRegister != null)
+                _associations.Register(newLine, parserToRegister, element, synthesizeNewScopeResult?.Name);
+        }
+
+        if (element is CompositeSyntaxElement composite)
+        {
+            var subParsers = parsers;
+            if (synthesizeNewScopeResult != null)
+                subParsers = _bundleBuilder.GetParsers(synthesizeNewScopeResult.Value.Name);
+
+            foreach (var subElement in composite.Children)
+                ConvertElementToScript(subElement, subParsers, ref lineIndex);
+        }
+
+        if (synthesizeNewScopeResult?.FinalText != null)
+        {
+            var endLine = new ScriptLine(-1, synthesizeNewScopeResult.Value.FinalText);
+            var newLine = _script.SetLine(endLine, lineIndex++);
+            if (parserToRegister != null)
+                _associations.RegisterFinalResult(newLine, (CompositeSyntaxElement)element);
         }
     }
 

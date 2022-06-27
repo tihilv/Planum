@@ -10,20 +10,22 @@ public class UmlSyntaxElement : SyntaxElement, IEquatable<UmlSyntaxElement>
     public readonly Arrow? Arrow;
     public readonly UmlFigure? SecondFigure;
     public readonly string? Comment;
+    public readonly string? Url;
 
-    public UmlSyntaxElement(UmlFigure firstFigure, Arrow? arrow = null, UmlFigure? secondFigure = null, string? comment = null)
+    public UmlSyntaxElement(UmlFigure firstFigure, Arrow? arrow = null, UmlFigure? secondFigure = null, string? comment = null, string? url = null)
     {
         FirstFigure = firstFigure;
         Arrow = arrow;
         SecondFigure = secondFigure;
         Comment = comment;
+        Url = url;
     }
 
     public bool Equals(UmlSyntaxElement? other)
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return FirstFigure.Equals(other.FirstFigure) && Nullable.Equals(Arrow, other.Arrow) && Nullable.Equals(SecondFigure, other.SecondFigure) && Comment == other.Comment;
+        return FirstFigure.Equals(other.FirstFigure) && Nullable.Equals(Arrow, other.Arrow) && Nullable.Equals(SecondFigure, other.SecondFigure) && Comment == other.Comment && Url == other.Url;
     }
 
     public override bool Equals(object? obj)
@@ -42,6 +44,7 @@ public class UmlSyntaxElement : SyntaxElement, IEquatable<UmlSyntaxElement>
             hashCode = (hashCode * 397) ^ Arrow.GetHashCode();
             hashCode = (hashCode * 397) ^ SecondFigure.GetHashCode();
             hashCode = (hashCode * 397) ^ (Comment != null ? Comment.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ (Url != null ? Url.GetHashCode() : 0);
             return hashCode;
         }
     }

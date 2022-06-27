@@ -1,5 +1,6 @@
 ﻿using Bundle.Uml.Elements;
 using Language.Api;
+using Language.Api.Syntax;
 using Language.Common;
 
 namespace Bundle.Uml.Parsers;
@@ -28,8 +29,16 @@ public class UmlContainerElementParser : IParser
 
         return new ParseResult(new UmlContainerSyntaxElement(containerType, tokens[1].Value), UmlBundle.Name, EndParser.Instance);
     }
-    
-    private class EndParser : SingleStatementParser
+
+    public SynthesizeResult? Synthesize(SyntaxElement element)
+    {
+        if (element is UmlContainerSyntaxElement el)
+            return new SynthesizeResult($"{el.Type} {el.Name} {{", new SynthesizeNewScopeResult(UmlBundle.Name, "}"));
+
+        return null;
+    }
+
+    private class EndParser : SingleStatementParser<UmlContainerSyntaxElement>
     {
         internal static readonly IParser Instance = new EndParser();
     

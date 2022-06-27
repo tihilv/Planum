@@ -5,11 +5,12 @@ using Language.Common.Semantic;
 
 namespace Bundle.Uml.Semantic;
 
-public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAliasedSemantic, IGroupableSemantic
+public class UmlFigureSemanticElement : ISemanticElement, ITextedSemantic, IAliasedSemantic, IGroupableSemantic, IUrlSemantic
 {
     private readonly List<Usage> _usages;
     private string _text;
     private string? _alias;
+    private string? _url;
 
     public List<Usage> Usages => _usages;
 
@@ -23,6 +24,12 @@ public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAlias
     {
         get { return _alias; }
         set { SetAlias(value); }
+    }
+
+    public String? Url
+    {
+        get { return _url; }
+        set { SetUrl(value); }
     }
 
     public String Id => _alias ?? _text;
@@ -39,6 +46,7 @@ public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAlias
     internal void Register(UmlSyntaxElement uml, UmlFigure figure)
     {
         _usages.Add(new Usage(uml, figure));
+        _url = figure.Url ?? _url;
     }
 
     internal void RegisterAlias(string name, string alias)
@@ -46,7 +54,7 @@ public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAlias
         _text = name;
         _alias = alias;
     }
-    
+
     private void SetText(String newText)
     {
         foreach (var usage in Usages)
@@ -61,7 +69,7 @@ public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAlias
     private Usage GetOrCreateDefinitiveUsage(out Usage? usageToTake)
     {
         usageToTake = null;
-        
+
         var appropriateUsage = Usages.FirstOrDefault(u => u.SyntaxElement.Arrow == null && u.SyntaxElement.SecondFigure == null);
         if (appropriateUsage == null)
         {
@@ -73,7 +81,7 @@ public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAlias
 
         return appropriateUsage;
     }
-    
+
     private void SetAlias(String newAlias)
     {
         if (string.IsNullOrEmpty(Alias))
@@ -106,7 +114,7 @@ public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAlias
             {
                 if (usage.Figure.Alias?.Equals(Alias) == true)
                     ReplaceFigure(usage, usage.Figure.With(alias: newAlias));
-                
+
                 // ... and texts that equals to alias
                 else if (usage.Figure.Text.Equals(Alias))
                     ReplaceFigure(usage, usage.Figure.With(text: newAlias));
@@ -114,6 +122,15 @@ public class UmlFigureSemanticElement: ISemanticElement, ITextedSemantic, IAlias
         }
 
         _alias = newAlias;
+    }
+
+    private void SetUrl(String newUrl)
+    {
+        // search for an appropriate usage
+        var appropriateUsage = GetOrCreateDefinitiveUsage(out _);
+        ReplaceFigure(appropriateUsage, appropriateUsage.Figure.With(url: newUrl));
+
+        _url = newUrl;
     }
 
     private void ReplaceFigure(Usage usage, UmlFigure newFigure)

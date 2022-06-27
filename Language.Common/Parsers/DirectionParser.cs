@@ -1,4 +1,5 @@
 ﻿using Language.Api;
+using Language.Api.Syntax;
 
 namespace Language.Common.Parsers;
 
@@ -25,6 +26,19 @@ public class DirectionParser : IParser
                 return new ParseResult(new DirectionSyntaxElement(){Direction = PlantDirection.TopToBottom});
         }
         
+        return null;
+    }
+
+    public SynthesizeResult? Synthesize(SyntaxElement element)
+    {
+        if (element is DirectionSyntaxElement el)
+        {
+            if (el.Direction == PlantDirection.LeftToRight)
+                return new SynthesizeResult(String.Join(" ", LeftToRightDirection));
+            else
+                return new SynthesizeResult(String.Join(" ", TopToBottomDirection));
+        }
+
         return null;
     }
 

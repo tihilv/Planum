@@ -27,9 +27,9 @@ public class UmlParserTests
     }
     
     [TestMethod]
-    public void SingleAliasAndStereotypeTest()
+    public void SingleAliasStereotypeAndUrlTest()
     {
-        string value = "(Use the application) as (Use) << Main >>";
+        string value = "(Use the application) as (Use) << Main >> [[http://google.com]]";
         var line = new ScriptLine(1, value);
         var tokens = UmlTokenizer.Instance.GetTokens(line).ToArray();
         var umlElement = UmlElementParser.Instance.Parse(tokens)?.SyntaxElement as UmlSyntaxElement;
@@ -38,7 +38,7 @@ public class UmlParserTests
         Assert.IsNull(umlElement.Arrow);
         Assert.IsNull(umlElement.SecondFigure);
         Assert.IsNull(umlElement.Comment);
-        Assert.AreEqual(new UmlFigure(UmlFigureType.UseCase, "Use the application", "Main", "(Use)"),umlElement.FirstFigure);
+        Assert.AreEqual(new UmlFigure(UmlFigureType.UseCase, "Use the application", "Main", "(Use)","http://google.com"),umlElement.FirstFigure);
     }
     
     [TestMethod]

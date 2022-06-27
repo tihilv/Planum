@@ -12,61 +12,81 @@ public class ArrowsTests
     [TestMethod]
     public void NoEndSingleLineArrowTest()
     {
-        var arrow = ArrowParser.Instance.Parse("--");
+        var stringArrow = "--";
+        var arrow = ArrowParser.Instance.Parse(stringArrow);
         Assert.IsNotNull(arrow);
         Assert.AreEqual(ArrowShape.No, arrow.Value.Start);
         Assert.AreEqual(ArrowShape.No, arrow.Value.End);
         Assert.AreEqual(2, arrow.Value.Length);
         Assert.AreEqual(LineType.Plain, arrow.Value.Type);
         Assert.AreEqual(Direction.Undefined, arrow.Value.Direction);
+
+        var synth = ArrowParser.Instance.Synthesize(arrow.Value);
+        Assert.AreEqual(stringArrow, synth);
     }
 
     [TestMethod]
     public void NoEndBoldLineArrowTest()
     {
-        var arrow = ArrowParser.Instance.Parse("===");
+        var stringArrow = "===";
+        var arrow = ArrowParser.Instance.Parse(stringArrow);
         Assert.IsNotNull(arrow);
         Assert.AreEqual(ArrowShape.No, arrow.Value.Start);
         Assert.AreEqual(ArrowShape.No, arrow.Value.End);
         Assert.AreEqual(3, arrow.Value.Length);
         Assert.AreEqual(LineType.Bold, arrow.Value.Type);
         Assert.AreEqual(Direction.Undefined, arrow.Value.Direction);
+        
+        var synth = ArrowParser.Instance.Synthesize(arrow.Value);
+        Assert.AreEqual(stringArrow, synth);
     }
 
     [TestMethod]
     public void ArrowEndDashLineArrowTest()
     {
-        var arrow = ArrowParser.Instance.Parse("..>");
+        var stringArrow = "..>";
+        var arrow = ArrowParser.Instance.Parse(stringArrow);
         Assert.IsNotNull(arrow);
         Assert.AreEqual(ArrowShape.No, arrow.Value.Start);
         Assert.AreEqual(ArrowShape.Arrow, arrow.Value.End);
         Assert.AreEqual(2, arrow.Value.Length);
         Assert.AreEqual(LineType.Dash, arrow.Value.Type);
         Assert.AreEqual(Direction.Undefined, arrow.Value.Direction);
+        
+        var synth = ArrowParser.Instance.Synthesize(arrow.Value);
+        Assert.AreEqual(stringArrow, synth);
     }
 
     [TestMethod]
     public void TwoTriangleEndBoldLineArrowTest()
     {
-        var arrow = ArrowParser.Instance.Parse("<|=|>");
+        var stringArrow = "<|=|>";
+        var arrow = ArrowParser.Instance.Parse(stringArrow);
         Assert.IsNotNull(arrow);
         Assert.AreEqual(ArrowShape.Triangle, arrow.Value.Start);
         Assert.AreEqual(ArrowShape.Triangle, arrow.Value.End);
         Assert.AreEqual(1, arrow.Value.Length);
         Assert.AreEqual(LineType.Bold, arrow.Value.Type);
         Assert.AreEqual(Direction.Undefined, arrow.Value.Direction);
+        
+        var synth = ArrowParser.Instance.Synthesize(arrow.Value);
+        Assert.AreEqual(stringArrow, synth);
     }
 
     [TestMethod]
     public void ArrowDirectionTest()
     {
-        var arrow = ArrowParser.Instance.Parse(".l.>");
+        var stringArrow = ".l.>";
+        var arrow = ArrowParser.Instance.Parse(stringArrow);
         Assert.IsNotNull(arrow);
         Assert.AreEqual(ArrowShape.No, arrow.Value.Start);
         Assert.AreEqual(ArrowShape.Arrow, arrow.Value.End);
         Assert.AreEqual(2, arrow.Value.Length);
         Assert.AreEqual(LineType.Dash, arrow.Value.Type);
         Assert.AreEqual(Direction.Left, arrow.Value.Direction);
+        
+        var synth = ArrowParser.Instance.Synthesize(arrow.Value);
+        Assert.AreEqual(stringArrow, synth);
     }
 
     

@@ -1,4 +1,5 @@
-﻿using Language.Common.Utils;
+﻿using System.Text;
+using Language.Common.Utils;
 
 namespace Language.Common.Primitives;
 
@@ -18,6 +19,11 @@ public struct Arrow
         Type = type;
         Direction = direction;
     }
+
+    public override String ToString()
+    {
+        return ArrowParser.Instance.Synthesize(this);
+    }
 }
 
 public class ArrowParser
@@ -28,14 +34,19 @@ public class ArrowParser
     private readonly (string, ArrowShape)[] _endShapes;
     private readonly Dictionary<char, LineType> _lineTypeBySymbol;
     private readonly (string, Direction)[] _directions;
-    
+
+    private readonly Dictionary<ArrowShape, string> _reverseStartShapes;
+    private readonly Dictionary<ArrowShape, string> _reverseEndShapes;
+    private readonly Dictionary<LineType, char> _reverseLineTypeBySymbol;
+    private readonly Dictionary<Direction, string> _reverseDirections;
+
     private ArrowParser()
     {
         _startShapes = new (String, ArrowShape)[]
         {
+            ("^", ArrowShape.Triangle),
             ("<|", ArrowShape.Triangle),
             ("<", ArrowShape.Arrow),
-            ("^", ArrowShape.Triangle),
             ("*", ArrowShape.DiamondFull),
             ("o", ArrowShape.DiamondEmpty),
             ("+", ArrowShape.Cross),
@@ -47,9 +58,9 @@ public class ArrowParser
         
         _endShapes = new (String, ArrowShape)[]
         {
+            ("^", ArrowShape.Triangle),
             ("|>", ArrowShape.Triangle),
             (">", ArrowShape.Arrow),
-            ("^", ArrowShape.Triangle),
             ("*", ArrowShape.DiamondFull),
             ("o", ArrowShape.DiamondEmpty),
             ("+", ArrowShape.Cross),
@@ -78,8 +89,22 @@ public class ArrowParser
             { '~', LineType.Dot },
             { '=', LineType.Bold }
         };
+
+        _reverseStartShapes = new Dictionary<ArrowShape, String>();
+        foreach (var shape in _startShapes)
+            _reverseStartShapes[shape.Item2] = shape.Item1;
+
+        _reverseEndShapes = new Dictionary<ArrowShape, String>();
+        foreach (var shape in _endShapes)
+            _reverseEndShapes[shape.Item2] = shape.Item1;
         
+        _reverseLineTypeBySymbol = new Dictionary<LineType, char>();
+        foreach (var lt in _lineTypeBySymbol)
+            _reverseLineTypeBySymbol.Add(lt.Value, lt.Key);
         
+        _reverseDirections = new Dictionary<Direction, string>();
+        foreach (var dir in _directions)
+            _reverseDirections[dir.Item2] = dir.Item1;
     }
 
     public Arrow? Parse(string str)
@@ -148,6 +173,28 @@ public class ArrowParser
 
         return ArrowShape.No;
     }
-    
-    
+
+
+    public String Synthesize(Arrow arrow)
+    {
+        var sb = new StringBuilder();
+        
+        if (arrow.Start != ArrowShape.No)
+            sb.Append(_reverseStartShapes[arrow.Start]);
+
+        var s = _reverseLineTypeBySymbol[arrow.Type];
+        var middleIndex = Math.Max(0, arrow.Length / 2 - 1);
+
+        for (int i = 0; i < arrow.Length; i++)
+        {
+            sb.Append(s);
+            if (i == middleIndex && arrow.Direction != Direction.Undefined)
+                sb.Append(_reverseDirections[arrow.Direction]);
+        }
+
+        if (arrow.End != ArrowShape.No)
+            sb.Append(_reverseEndShapes[arrow.End]);
+
+        return sb.ToString();
+    }
 }

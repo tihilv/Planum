@@ -4,7 +4,7 @@ using Language.Common;
 
 namespace Bundle.Uml.Parsers;
 
-public class StartUmlRootParser : SingleStatementParser
+public class StartUmlRootParser : SingleStatementParser<UmlRootSyntaxElement>
 {
     public static readonly IParser Instance = new StartUmlRootParser();
     
@@ -19,7 +19,7 @@ public class StartUmlRootParser : SingleStatementParser
         return new ParseResult(new UmlRootSyntaxElement(), UmlBundle.Name, EndUmlRootParser.Instance);
     }
 
-    private class EndUmlRootParser : SingleStatementParser
+    private class EndUmlRootParser : SingleStatementParser<UmlRootSyntaxElement>
     {
         internal static readonly IParser Instance = new EndUmlRootParser();
     

@@ -14,11 +14,12 @@ public class UmlTokenizer : ITokenizer
     {
         _braces = new[]
         {
+            new Braces("<<", ">>"),
+            new Braces("[[", "]]"),
             new Braces(":", ":"),
             new Braces("(", ")"),
             new Braces("[", "]"),
             new Braces("\"", "\""),
-            new Braces("<<", ">>"),
         };
 
         _separators = new[]

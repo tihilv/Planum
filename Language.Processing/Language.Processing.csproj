@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Language.Api\Language.Api.csproj" />
+      <ProjectReference Include="..\Language.Common\Language.Common.csproj" />
     </ItemGroup>
 
 </Project>

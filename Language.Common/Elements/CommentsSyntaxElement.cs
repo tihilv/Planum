@@ -9,6 +9,5 @@ public class CommentsSyntaxElement : SyntaxElement
     public CommentsSyntaxElement(String scriptLineValue)
     {
         Value = scriptLineValue;
-        throw new NotImplementedException();
     }
 }
