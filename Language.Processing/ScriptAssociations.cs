@@ -35,9 +35,8 @@ public class ScriptAssociations
         {
             SynthesizeNewScopeResult? synthesizeNewScopeResult = null;
             if (_finalizations.TryGetValue(element, out var finalLine))
-            {
                 synthesizeNewScopeResult = new SynthesizeNewScopeResult(result.NewScopeName, finalLine.Value);
-            }
+
             return (result.Line, synthesizeNewScopeResult);
         }
 

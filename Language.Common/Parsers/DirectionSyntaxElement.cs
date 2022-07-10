@@ -4,7 +4,12 @@ namespace Language.Common.Parsers;
 
 public class DirectionSyntaxElement : SyntaxElement
 {
-    public PlantDirection Direction { get; set; }
+    public readonly PlantDirection Direction;
+
+    public DirectionSyntaxElement(PlantDirection direction)
+    {
+        Direction = direction;
+    }
 }
 
 public enum PlantDirection: byte

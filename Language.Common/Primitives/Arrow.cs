@@ -3,7 +3,7 @@ using Language.Common.Utils;
 
 namespace Language.Common.Primitives;
 
-public struct Arrow
+public struct Arrow : IEquatable<Arrow>
 {
     public readonly ArrowShape Start;
     public readonly ArrowShape End;
@@ -24,6 +24,41 @@ public struct Arrow
     {
         return ArrowParser.Instance.Synthesize(this);
     }
+    
+#region Equality
+    public bool Equals(Arrow other)
+    {
+        return Start == other.Start && End == other.End && Length == other.Length && Type == other.Type && Direction == other.Direction;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Arrow other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hashCode = (int)Start;
+            hashCode = (hashCode * 397) ^ (int)End;
+            hashCode = (hashCode * 397) ^ Length.GetHashCode();
+            hashCode = (hashCode * 397) ^ (int)Type;
+            hashCode = (hashCode * 397) ^ (int)Direction;
+            return hashCode;
+        }
+    }
+
+    public static bool operator ==(Arrow left, Arrow right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Arrow left, Arrow right)
+    {
+        return !left.Equals(right);
+    }
+#endregion
 }
 
 public class ArrowParser

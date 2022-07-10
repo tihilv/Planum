@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Bundle.Uml;
 using Bundle.Uml.Elements;
@@ -45,7 +46,7 @@ public class ScriptParsingTests
     }
     
     [TestMethod]
-    public void SimpleSynthesizeTest()
+    public void ExistingSynthesizeTest()
     {
         var sb = GetSimpleScript();
         var script = new TextScript(sb);
@@ -61,6 +62,42 @@ public class ScriptParsingTests
         Assert.IsTrue(Enumerable.SequenceEqual(sb, resultLines.Select(r=>r.Value)));
     }
 
+    [TestMethod]
+    public void NewSynthesizeTest()
+    {
+        var sb = new []{"@startuml", "@enduml"};
+        var script = new TextScript(sb);
+        
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+        var interpreter = new ScriptInterpreter(script, builder);
+        interpreter.UpdateSyntaxModel();
+
+
+        var umlRoot = (UmlRootSyntaxElement)interpreter.RootSyntaxElement.Children.Single();
+        umlRoot.Make(new DirectionSyntaxElement(PlantDirection.TopToBottom)).Last();
+        var container = new UmlContainerSyntaxElement(UmlContainerType.Package, "MyPackage");
+        umlRoot.Make(container).Last();
+
+        container.Make(new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, "Actor1"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 3, LineType.Dash, Direction.Right), new UmlFigure(UmlFigureType.Component, "Component1"))).Last();
+        container.Make(new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, "Actor1"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Component, "Component2"))).Last();
+        
+        interpreter.UpdateScript();
+        var resultLines = script.GetLines().ToArray();
+        Assert.AreEqual(7, resultLines.Length);
+        
+        var ethalon = new List<String>();
+        ethalon.Add("@startuml");
+        ethalon.Add(" top to bottom direction");
+        ethalon.Add(" package \"MyPackage\" {");
+        ethalon.Add("  actor \"Actor1\" .r..> component \"Component1\"");
+        ethalon.Add("  actor \"Actor1\" --> component \"Component2\"");
+        ethalon.Add(" }");
+        ethalon.Add("@enduml");
+        Assert.IsTrue(Enumerable.SequenceEqual(ethalon, resultLines.Select(r=>r.Value)));
+    }
+
+    
     private static List<String> GetSimpleScript()
     {
         var sb = new List<String>();
@@ -78,4 +115,74 @@ public class ScriptParsingTests
         sb.Add("@enduml");
         return sb;
     }
+    
+    [TestMethod]
+    public void ProcessingPerformanceTest()
+    {
+        var sb = GetBigScript();
+        var script = new TextScript(sb);
+        
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var sw = Stopwatch.StartNew(); 
+        var interpreter = new ScriptInterpreter(script, builder);
+        interpreter.UpdateSyntaxModel();
+        sw.Stop();
+        Assert.IsTrue(sw.ElapsedMilliseconds < 200);
+        
+        sw.Restart();
+        interpreter.UpdateScript();
+        sw.Stop();
+        Assert.IsTrue(sw.ElapsedMilliseconds < 200);
+    }
+    
+    [TestMethod]
+    public void SynthesisPerformanceTest()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var sb = GetBigScript();
+        var script = new TextScript(sb);
+        var interpreter = new ScriptInterpreter(script, builder);
+
+        interpreter.UpdateSyntaxModel();
+        var root = interpreter.RootSyntaxElement.Children.Single();
+        interpreter.RootSyntaxElement.Make(root).Deleted();
+        
+        var newScript = new TextScript(Array.Empty<string>());
+        var newInterpreter = new ScriptInterpreter(newScript, builder);
+        newInterpreter.UpdateSyntaxModel();
+        
+        newInterpreter.RootSyntaxElement.Make(root).First();
+
+        var sw = Stopwatch.StartNew();
+        newInterpreter.UpdateScript();
+        sw.Stop();
+        Assert.IsTrue(sw.ElapsedMilliseconds < 200);
+    }
+
+    internal static List<String> GetBigScript()
+    {
+        int groupCount = 100;
+        int elementsPerGroup = 100;
+        var sb = new List<String>();
+        sb.Add("@startuml");
+        for (int i = 0; i < groupCount; i++)
+        {
+            sb.Add($"actor \"Food Critic {i}\" as fc{i}");
+            
+            sb.Add($"rectangle \"Restaurant {i}\" {{");
+            for (int j = 0; j < elementsPerGroup; j++)
+                sb.Add($"    usecase \"Eat Food {i} {j}\" as UC{i}_{j}");
+            sb.Add("}");
+
+            for (int j = 0; j < elementsPerGroup; j++)
+                sb.Add($"fc{i} --> UC{i}_{j}");
+        }
+        sb.Add("@enduml");
+        return sb;
+    }
+
 }

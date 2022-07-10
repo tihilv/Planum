@@ -20,10 +20,10 @@ public class DirectionParser : IParser
         if (tokens.Length == 4)
         {
             if (Match(tokens, LeftToRightDirection))
-                return new ParseResult(new DirectionSyntaxElement(){Direction = PlantDirection.LeftToRight});
+                return new ParseResult(new DirectionSyntaxElement(PlantDirection.LeftToRight));
             
             if (Match(tokens, TopToBottomDirection))
-                return new ParseResult(new DirectionSyntaxElement(){Direction = PlantDirection.TopToBottom});
+                return new ParseResult(new DirectionSyntaxElement(PlantDirection.TopToBottom));
         }
         
         return null;

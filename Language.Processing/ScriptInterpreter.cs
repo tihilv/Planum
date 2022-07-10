@@ -55,7 +55,7 @@ public class ScriptInterpreter
                     {
                         var element = result.Value.SyntaxElement;
                         scope.CurrentSyntaxElement.Make(element).Last();
-                        _associations.Register(line, parser, element, result?.NewScopeResult?.Name);
+                        _associations.Register(line, parser, element, result.Value.NewScopeResult?.Name);
 
                         if (result.Value.NewScopeResult != null)
                         {
@@ -78,11 +78,11 @@ public class ScriptInterpreter
     {
         var lineIndex = 0;
         var parsers = _bundleBuilder.GetParsers(String.Empty);
-        ConvertElementToScript(RootSyntaxElement, parsers, ref lineIndex);
+        ConvertElementToScript(RootSyntaxElement, parsers, string.Empty, ref lineIndex);
         _script.Trim(lineIndex);
     }
 
-    private void ConvertElementToScript(SyntaxElement element, IReadOnlyCollection<IParser> parsers, ref int lineIndex)
+    private void ConvertElementToScript(SyntaxElement element, IReadOnlyCollection<IParser> parsers, string margin, ref int lineIndex)
     {
         ScriptLine? line = null;
         SynthesizeNewScopeResult? synthesizeNewScopeResult = null;
@@ -101,8 +101,10 @@ public class ScriptInterpreter
                 var synthesizeResult = parser.Synthesize(element);
                 if (synthesizeResult != null)
                 {
-                    line = new ScriptLine(-1, synthesizeResult.Value.Text);
+                    line = new ScriptLine(-1, margin + synthesizeResult.Value.Text);
                     synthesizeNewScopeResult = synthesizeResult.Value.NewScopeResult;
+                    if (synthesizeNewScopeResult != null && !string.IsNullOrEmpty(margin))
+                        synthesizeNewScopeResult = new SynthesizeNewScopeResult(synthesizeNewScopeResult.Value.Name, margin + synthesizeNewScopeResult.Value.FinalText);
                     parserToRegister = parser;
                     break;
                 }
@@ -119,11 +121,14 @@ public class ScriptInterpreter
         if (element is CompositeSyntaxElement composite)
         {
             var subParsers = parsers;
-            if (synthesizeNewScopeResult != null)
+            if (synthesizeNewScopeResult?.Name != null)
                 subParsers = _bundleBuilder.GetParsers(synthesizeNewScopeResult.Value.Name);
 
+            var nextMargin = margin;
+            if (line != null)
+                nextMargin = margin + " ";
             foreach (var subElement in composite.Children)
-                ConvertElementToScript(subElement, subParsers, ref lineIndex);
+                ConvertElementToScript(subElement, subParsers, nextMargin, ref lineIndex);
         }
 
         if (synthesizeNewScopeResult?.FinalText != null)

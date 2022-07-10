@@ -33,7 +33,7 @@ public class UmlContainerElementParser : IParser
     public SynthesizeResult? Synthesize(SyntaxElement element)
     {
         if (element is UmlContainerSyntaxElement el)
-            return new SynthesizeResult($"{el.Type} {el.Name} {{", new SynthesizeNewScopeResult(UmlBundle.Name, "}"));
+            return new SynthesizeResult($"{el.Type.ToString().ToLower()} \"{el.Name}\" {{", new SynthesizeNewScopeResult(UmlBundle.Name, "}"));
 
         return null;
     }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using Bundle.Uml;
 using Bundle.Uml.Elements;
 using Bundle.Uml.Semantic;
@@ -6,6 +7,7 @@ using Language.Api.Syntax;
 using Language.Common;
 using Language.Common.Primitives;
 using Language.Common.Transfers;
+using Language.Processing;
 using Language.Tests.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -82,5 +84,23 @@ public class SyntaxToSemanticTests
         Assert.IsNotNull(containerSem);
         Assert.AreEqual(SimpleTestSyntaxModel.containerName, containerSem.Id);
         Assert.AreEqual(3, containerSem.GroupSyntaxElement.Children.Count);
+    }
+
+    [TestMethod]
+    public void ProcessingPerformanceTest()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var sb = ScriptParsingTests.GetBigScript();
+        var script = new TextScript(sb);
+        var interpreter = new ScriptInterpreter(script, builder);
+        interpreter.UpdateSyntaxModel();
+
+        var semanticConverter = new DefaultSemanticConverter(builder);
+        var sw = Stopwatch.StartNew();
+        var result = semanticConverter.GetSemanticElements(interpreter.RootSyntaxElement).ToArray();
+        sw.Stop();
+        Assert.IsTrue(sw.ElapsedMilliseconds < 200);
     }
 }

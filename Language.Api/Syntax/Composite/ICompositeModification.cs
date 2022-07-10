@@ -1,6 +1,6 @@
 ﻿namespace Language.Api.Syntax;
 
-public interface ICompositeOperation
+public interface ICompositeModification
 {
     void First();
     void Last();

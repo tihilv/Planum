@@ -4,5 +4,5 @@ public interface ICompositeSyntaxElement
 {
     IReadOnlyCollection<SyntaxElement> Children { get; }
 
-    ICompositeOperation Make(SyntaxElement syntaxElement);
+    ICompositeModification Make(SyntaxElement syntaxElement);
 }

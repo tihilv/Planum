@@ -55,16 +55,25 @@ public class UmlElementParser : IParser
             SynthesizeFigure(el.FirstFigure, sb);
 
             if (el.Arrow != null)
+            {
+                sb.Append(" ");
                 sb.Append(ArrowParser.Instance.Synthesize(el.Arrow.Value));
-            
+            }
+
             if (el.SecondFigure != null)
+            {
+                sb.Append(" ");
                 SynthesizeFigure(el.SecondFigure.Value, sb);
+            }
+        
 
             if (!string.IsNullOrEmpty(el.Comment))
             {
                 sb.Append(" : ");
                 sb.Append(el.Comment);
             }
+
+            return new SynthesizeResult(sb.ToString());
         }
 
         return null;
@@ -72,14 +81,15 @@ public class UmlElementParser : IParser
 
     private void SynthesizeFigure(UmlFigure figure, StringBuilder sb)
     {
-        sb.Append(figure.Type);
-        sb.Append(" ");
+        sb.Append(figure.Type.ToString().ToLower());
+        sb.Append(" \"");
         sb.Append(figure.Text);
-        sb.Append(" ");
+        sb.Append("\"");
         if (!string.IsNullOrEmpty(figure.Alias))
         {
-            sb.Append("as ");
+            sb.Append(" as \"");
             sb.Append(figure.Alias);
+            sb.Append("\"");
         }
 
         if (!string.IsNullOrEmpty(figure.Stereotype))

@@ -6,8 +6,17 @@ public static class StringMatcher
     {
         if (position + stringToMatch.Length > str.Length)
             return false;
+
+        if (stringToMatch.Length >= 2 && str[position + 1] != stringToMatch[1])
+            return false;
+
+        if (stringToMatch.Length >= 1 && str[position] != stringToMatch[0])
+            return false;
+
+        if (stringToMatch.Length < 3)
+            return true;
         
-        for (ushort index = 0; index < stringToMatch.Length; index++)
+        for (ushort index = 2; index < stringToMatch.Length; index++)
             if (str[position + index] != stringToMatch[index])
                 return false;
         
