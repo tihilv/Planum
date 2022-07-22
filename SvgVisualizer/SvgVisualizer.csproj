@@ -8,6 +8,13 @@
 
     <ItemGroup>
       <PackageReference Include="Svg" Version="3.4.2" />
+      <PackageReference Include="System.Reactive" Version="5.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Engine.Api\Engine.Api.csproj" />
+      <ProjectReference Include="..\Language.Api\Language.Api.csproj" />
+      <ProjectReference Include="..\Language.Common\Language.Common.csproj" />
     </ItemGroup>
 
 </Project>

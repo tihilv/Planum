@@ -87,9 +87,8 @@ public class UmlElementParser : IParser
         sb.Append("\"");
         if (!string.IsNullOrEmpty(figure.Alias))
         {
-            sb.Append(" as \"");
+            sb.Append(" as ");
             sb.Append(figure.Alias);
-            sb.Append("\"");
         }
 
         if (!string.IsNullOrEmpty(figure.Stereotype))

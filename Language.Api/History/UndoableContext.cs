@@ -11,9 +11,9 @@ public class UndoableContext
         _currentStep = new AsyncLocal<UndoableStep?>();
     }
 
-    internal IDisposable CreateScope(Action<UndoableStep> registerAction)
+    internal IDisposable CreateScope(Action<UndoableStep> registeringAction, Action<UndoableStep> registeredAction)
     {
-        return new Handle(this, new UndoableStep(), registerAction);
+        return new Handle(this, new UndoableStep(), registeringAction, registeredAction);
     }
     
     public void RegisterAction(IUndoRedoAction action)
@@ -24,24 +24,28 @@ public class UndoableContext
     private class Handle : IDisposable
     {
         private readonly UndoableContext _undoableContext;
-        private readonly Action<UndoableStep> _registerAction;
+        private readonly Action<UndoableStep> _registeringAction; 
+        private readonly Action<UndoableStep> _registeredAction;
 
-        public Handle(UndoableContext undoableContext, UndoableStep step, Action<UndoableStep> registerAction)
+        public Handle(UndoableContext undoableContext, UndoableStep step, Action<UndoableStep> registeringAction, Action<UndoableStep> registeredAction)
         {
             if (undoableContext._currentStep.Value != null)
                 throw new InvalidOperationException("Unable to create inner context.");
             
             _undoableContext = undoableContext;
-            _registerAction = registerAction;
+            _registeringAction = registeringAction;
+            _registeredAction = registeredAction;
             _undoableContext._currentStep.Value = step;
         }
 
         public void Dispose()
         {
             var step = _undoableContext._currentStep.Value; 
+            if (step != null) 
+                _registeringAction(step);
             _undoableContext._currentStep.Value = null;
             if (step != null) 
-                _registerAction(step);
+                _registeredAction(step);
         }
     }
     

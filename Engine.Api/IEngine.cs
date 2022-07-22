@@ -2,5 +2,5 @@
 
 public interface IEngine: IDisposable
 {
-    Task<string> GetPlantAsync(string script);
+    Task<String> GetPlantAsync(String script);
 }

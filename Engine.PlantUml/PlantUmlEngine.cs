@@ -47,7 +47,7 @@ public class PlantUmlEngine: IEngine
     }
 
     private PlantUmlErrorReport? _errorReport;
-    public async Task<string> GetPlantAsync(string script)
+    public async Task<String> GetPlantAsync(String script)
     {
         await _semaphore.WaitAsync();
 
