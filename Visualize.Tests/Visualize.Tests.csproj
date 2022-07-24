@@ -19,6 +19,7 @@
       <ProjectReference Include="..\Engine.PlantUml\Engine.PlantUml.csproj" />
       <ProjectReference Include="..\Language.Processing\Language.Processing.csproj" />
       <ProjectReference Include="..\SvgVisualizer\SvgVisualizer.csproj" />
+      <ProjectReference Include="..\VectorDrawing\VectorDrawing.csproj" />
     </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ namespace Planum.Ui.ViewModels;
 
 public class CanvasViewModel: ViewModelBase
 {
-    public DrawingModel DrawingModel { get; }
+    //public DrawingModel DrawingModel { get; }
 
     public CanvasViewModel()
     {
@@ -19,7 +19,8 @@ public class CanvasViewModel: ViewModelBase
     {
         get
         {
-            return DrawingModel.CreateBitmap().ConvertToAvaloniaBitmap();
+            return null;
+            //return DrawingModel.CreateBitmap().ConvertToAvaloniaBitmap();
         }
     }
 }

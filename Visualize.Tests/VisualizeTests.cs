@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
 using Bundle.Uml;
-using Engine.PlantUml;
 using Language.Common;
 using Language.Processing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SvgVisualizer;
+using VectorDrawing;
+using Visualize.Api.Geometry;
 
 namespace Visualize.Tests;
 
@@ -14,26 +16,40 @@ namespace Visualize.Tests;
 public class VisualizeTests
 {
     [TestMethod]
-    public void TestSimpleModel()
+    public void ImageGenerationTest()
     {
-        var script = new TextScript(GetSimpleScript());
         var builder = new DefaultBundleBuilder();
         builder.RegisterBundle(UmlBundle.Instance);
 
-        var documentModel = new DocumentModel(script, builder);
-        var engine = new PlantUmlEngine();
-        var drawingModel = new DrawingModel(documentModel, engine);
+        var documentModel = new DocumentModel(new TextScript(GetSimpleScript()), builder);
+        var vectorImage = new VectorImage();
+        var pipeline = new DocumentToImageSvgPipelineFactory().Create(documentModel, vectorImage);
+        
         bool finalized = false;
-        var result = drawingModel.Document.Subscribe(document =>
+        pipeline.Changed += (sender, args) =>
         {
-            if (document != null)
-                finalized = true;
-        });
+            finalized = true;
+        };
         DateTime begin = DateTime.Now;
         while (!finalized && (DateTime.Now - begin).TotalMilliseconds < 2000)
             Thread.Sleep(100);
         
         Assert.IsTrue(finalized);
+        Refresh(vectorImage);
+    }
+    
+    private void Refresh(VectorImage vectorImage)
+    {
+        using (var bitmap = new Bitmap(1500, 1500))
+        {
+            using (var g = Graphics.FromImage(bitmap))
+            {
+                var modelRectangle = vectorImage.GetBoundaries();
+                vectorImage.Rasterize(modelRectangle, new RectangleD(0, 0, 1500, 1500), g);
+            }
+
+            bitmap.Save("d:\\111.bmp");
+        }
     }
     
     private static List<String> GetSimpleScript()
@@ -53,5 +69,4 @@ public class VisualizeTests
         sb.Add("@enduml");
         return sb;
     }
-    
 }

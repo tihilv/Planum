@@ -13,8 +13,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Engine.Api\Engine.Api.csproj" />
+      <ProjectReference Include="..\Engine.PlantUml\Engine.PlantUml.csproj" />
       <ProjectReference Include="..\Language.Api\Language.Api.csproj" />
       <ProjectReference Include="..\Language.Common\Language.Common.csproj" />
+      <ProjectReference Include="..\Visualize.Api\Visualize.Api.csproj" />
     </ItemGroup>
 
 </Project>
