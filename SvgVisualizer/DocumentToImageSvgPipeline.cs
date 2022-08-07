@@ -7,6 +7,7 @@ using Language.Common.Semantic;
 using Svg;
 using SvgVisualizer.ElementDrawers;
 using Visualize.Api;
+using Visualize.Api.Geometry;
 using Visualize.Api.Primitives;
 
 namespace SvgVisualizer;
@@ -21,9 +22,11 @@ public class DocumentToImageSvgPipeline : IDocumentToImagePipeline
     private CancellationTokenSource? _currentCts;
     
     private Dictionary<string, ISemanticElement> _urlsToSemantic;
-    
+    private List<(RectangleD, string)>? _urls;
+    private Dictionary<ISemanticElement, IVectorPrimitive> _elementToLinkPrimitive;
+
     public event EventHandler<EventArgs>? Changed;
-    
+
     private static readonly Dictionary<Type, ISvgElementDrawer> _elementDrawers;
     static DocumentToImageSvgPipeline()
     {
@@ -66,6 +69,7 @@ public class DocumentToImageSvgPipeline : IDocumentToImagePipeline
         _currentCts = new CancellationTokenSource();
 
         _urlsToSemantic = new Dictionary<String, ISemanticElement>();
+        
         var undoManager = new UndoRedoManager();
 
         int index = 0;
@@ -92,12 +96,13 @@ public class DocumentToImageSvgPipeline : IDocumentToImagePipeline
         if (undoManager.CanUndo())
             undoManager.Undo();
     }
-    
+
     private void Draw(SvgDocument? document)
     {
         _vectorImage.Clear();
         if (document != null)
             VisualizeElement(document, primitive => _vectorImage.Add(primitive));
+        ProcessLinks();
     }
 
     private void VisualizeElement(SvgElement element, Action<IVectorPrimitive> newPrimitiveRegisterAction)
@@ -120,6 +125,60 @@ public class DocumentToImageSvgPipeline : IDocumentToImagePipeline
             throw new InvalidOperationException($"There is no drawer for Svg element '{element.GetType().FullName}'");
     }
 
+    private void ProcessLinks()
+    {
+        _urls = new List<(RectangleD, String)>();
+        _elementToLinkPrimitive = new Dictionary<ISemanticElement, IVectorPrimitive>();
+        ProcessLinks(_vectorImage.Primitives);
+    }
+
+    private void ProcessLinks(IEnumerable<IVectorPrimitive> primitives)
+    {
+        foreach (var primitive in primitives)
+        {
+            if (primitive is LinkPrimitive link)
+            {
+                _urls.Add((link.GetBoundaries(), link.Url));
+                _elementToLinkPrimitive.Add(_urlsToSemantic[link.Url], link);
+            }
+
+            if (primitive is CompositePrimitiveBase composite)
+                ProcessLinks(composite.Children);
+        }
+    }
+
+    public ISemanticElement? Select(PointD modelPoint)
+    {
+        double bestSquare = 0;
+        string bestUrl = string.Empty;
+
+        if (_urls != null)
+        {
+            foreach (var pair in _urls)
+            {
+                var square = pair.Item1.Square;
+                if (square > bestSquare)
+                {
+                    if (pair.Item1.Contains(modelPoint))
+                    {
+                        bestSquare = square;
+                        bestUrl = pair.Item2;
+                    }
+                }
+            }
+        }
+
+        if (bestUrl != String.Empty)
+            return _urlsToSemantic[bestUrl];
+
+        return null;
+    }
+
+    public void DrawToImage(ISemanticElement element, IVectorImage image)
+    {
+        image.Add(_elementToLinkPrimitive[element]);
+    }
+    
     public void Dispose()
     {
         _currentCts?.Cancel();

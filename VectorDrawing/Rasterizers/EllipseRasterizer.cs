@@ -6,6 +6,10 @@ namespace VectorDrawing.Rasterizers;
 
 internal class EllipseRasterizer: PrimitiveRasterizerBase<EllipsePrimitive>
 {
+    public EllipseRasterizer(IColorTransformer colorTransformer) : base(colorTransformer)
+    {
+    }
+
     protected override void DoProcess(EllipsePrimitive primitive, Graphics g, DrawingContext context)
     {
         using (var pen = GetPen(primitive))

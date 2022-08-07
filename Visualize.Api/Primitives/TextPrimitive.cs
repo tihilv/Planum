@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using Visualize.Api.Geometry;
-using Point = Visualize.Api.Geometry.Point;
 
 namespace Visualize.Api.Primitives;
 

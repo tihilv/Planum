@@ -8,6 +8,7 @@ using Language.Processing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SvgVisualizer;
 using VectorDrawing;
+using Visualize.Api;
 using Visualize.Api.Geometry;
 
 namespace Visualize.Tests;
@@ -45,11 +46,31 @@ public class VisualizeTests
             using (var g = Graphics.FromImage(bitmap))
             {
                 var modelRectangle = vectorImage.GetBoundaries();
-                vectorImage.Rasterize(modelRectangle, new RectangleD(0, 0, 1500, 1500), g);
+                vectorImage.Rasterize(modelRectangle, new RectangleF(0, 0, 1500, 1500), g);
             }
 
             bitmap.Save("d:\\111.bmp");
         }
+    }
+    
+    [TestMethod]
+    public void DrawingContextTest()
+    {
+        var modelRectangle = new RectangleD(10, 20, 200, 100);
+        var graphicsRectangle = new RectangleF(300, 400, 20, 10);
+
+        var drawingContext = new DrawingContext(modelRectangle, graphicsRectangle, (_, _, _) => { });
+        var graphicsPt1 = drawingContext.ToGraphics(new PointD(10, 20));
+        Assert.AreEqual(300, graphicsPt1.X);
+        Assert.AreEqual(400, graphicsPt1.Y);
+        
+        var graphicsPt2 = drawingContext.ToGraphics(new PointD(210, 120));
+        Assert.AreEqual(320, graphicsPt2.X);
+        Assert.AreEqual(410, graphicsPt2.Y);
+
+        var graphicsPt3 = drawingContext.ToGraphics(new PointD(110, 70));
+        Assert.AreEqual(310, graphicsPt3.X);
+        Assert.AreEqual(405, graphicsPt3.Y);
     }
     
     private static List<String> GetSimpleScript()

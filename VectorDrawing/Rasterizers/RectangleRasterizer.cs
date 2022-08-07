@@ -6,6 +6,10 @@ namespace VectorDrawing.Rasterizers;
 
 internal class RectangleRasterizer: PrimitiveRasterizerBase<RectanglePrimitive>
 {
+    public RectangleRasterizer(IColorTransformer colorTransformer) : base(colorTransformer)
+    {
+    }
+
     protected override void DoProcess(RectanglePrimitive primitive, Graphics g, DrawingContext context)
     {
         using (var pen = GetPen(primitive))

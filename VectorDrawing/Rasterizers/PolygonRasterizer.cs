@@ -6,6 +6,10 @@ namespace VectorDrawing.Rasterizers;
 
 internal class PolygonRasterizer: PrimitiveRasterizerBase<PolygonPrimitive>
 {
+    public PolygonRasterizer(IColorTransformer colorTransformer) : base(colorTransformer)
+    {
+    }
+
     protected override void DoProcess(PolygonPrimitive primitive, Graphics g, DrawingContext context)
     {
         using (var pen = GetPen(primitive))

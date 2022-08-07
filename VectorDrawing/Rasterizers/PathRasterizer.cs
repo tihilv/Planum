@@ -6,6 +6,10 @@ namespace VectorDrawing.Rasterizers;
 
 internal class PathRasterizer: PrimitiveRasterizerBase<PathPrimitive>
 {
+    public PathRasterizer(IColorTransformer colorTransformer) : base(colorTransformer)
+    {
+    }
+
     protected override void DoProcess(PathPrimitive primitive, Graphics g, DrawingContext context)
     {
         using (var pen = GetPen(primitive))

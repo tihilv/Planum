@@ -6,7 +6,7 @@ namespace Planum.Ui.Utils;
 
 public static class ImageConverter
 {
-    public static Bitmap ConvertToAvaloniaBitmap(this System.Drawing.Bitmap bitmap)
+    public static Bitmap? ConvertToAvaloniaBitmap(this System.Drawing.Bitmap? bitmap)
     {
         if (bitmap == null)
             return null;

@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using Visualize.Api.Geometry;
-using Point = Visualize.Api.Geometry.Point;
 
 namespace Visualize.Api.Primitives;
 
@@ -30,8 +29,8 @@ public class PathPrimitive: IVectorPrimitive
         if (!_lines.Any())
             return RectangleD.Empty;
         
-        Point minPoint = _lines[0].Start.MinCombined(_lines[0].End);
-        Point maxPoint = _lines[0].Start.MaxCombined(_lines[0].End);
+        PointD minPoint = _lines[0].Start.MinCombined(_lines[0].End);
+        PointD maxPoint = _lines[0].Start.MaxCombined(_lines[0].End);
 
         foreach (var line in _lines.Skip(1))
         {
@@ -45,10 +44,10 @@ public class PathPrimitive: IVectorPrimitive
 
 public readonly struct PathLine
 {
-    public readonly Point Start;
-    public readonly Point End;
+    public readonly PointD Start;
+    public readonly PointD End;
 
-    public PathLine(Point start, Point end)
+    public PathLine(PointD start, PointD end)
     {
         Start = start;
         End = end;
@@ -62,9 +61,9 @@ public readonly struct PathLine
 
 public readonly struct PathBezier
 {
-    public readonly Point[] Points;
+    public readonly PointD[] Points;
 
-    public PathBezier(Point[] points)
+    public PathBezier(PointD[] points)
     {
         Points = points;
     }

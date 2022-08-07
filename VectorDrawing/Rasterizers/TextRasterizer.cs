@@ -6,6 +6,10 @@ namespace VectorDrawing.Rasterizers;
 
 internal class TextRasterizer: PrimitiveRasterizerBase<TextPrimitive>
 {
+    public TextRasterizer(IColorTransformer colorTransformer) : base(colorTransformer)
+    {
+    }
+
     protected override void DoProcess(TextPrimitive primitive, Graphics g, DrawingContext context)
     {
         using (var brush = GetBrush(primitive))

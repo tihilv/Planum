@@ -6,6 +6,13 @@ namespace VectorDrawing.Rasterizers;
 
 internal abstract class PrimitiveRasterizerBase<T>: IPrimitiveRasterizer where T : class, IVectorPrimitive
 {
+    private readonly IColorTransformer _colorTransformer;
+
+    protected PrimitiveRasterizerBase(IColorTransformer colorTransformer)
+    {
+        _colorTransformer = colorTransformer;
+    }
+
     public Type PrimitiveType => typeof(T);
 
     public void Process(IVectorPrimitive primitive, Graphics g, DrawingContext context)
@@ -18,17 +25,17 @@ internal abstract class PrimitiveRasterizerBase<T>: IPrimitiveRasterizer where T
     
     protected Pen GetPen(IVectorPrimitive primitive)
     {
-        return new Pen(primitive.ForeColor);
+        return _colorTransformer.GetPen(primitive);
     }
     
     protected Brush GetFillBrush(IVectorPrimitive primitive)
     {
-        return new SolidBrush(primitive.BackColor);
+        return _colorTransformer.GetFillBrush(primitive);
     }
 
     protected Brush GetBrush(IVectorPrimitive primitive)
     {
-        return new SolidBrush(primitive.ForeColor);
+        return _colorTransformer.GetBrush(primitive);
     }
 
     protected abstract void DoProcess(T primitive, Graphics g, DrawingContext context);

@@ -8,42 +8,48 @@ namespace VectorDrawing;
 
 public class VectorImage : IVectorImage
 {
-    private readonly List<IVectorPrimitive> _primitives;
+    private readonly Dictionary<Type, IPrimitiveRasterizer> _primitiveRasterizers;
+
+    private readonly IColorTransformer _colorTransformer;
     
-    private static readonly Dictionary<Type, IPrimitiveRasterizer> _primitiveRasterizers;
+    private readonly List<IVectorPrimitive> _primitives;
 
-    static VectorImage()
+    public Int64 Generation { get; private set; }
+    public IEnumerable<IVectorPrimitive> Primitives => _primitives;
+
+    public VectorImage(IColorTransformer? colorTransformer = null)
     {
+        _colorTransformer = colorTransformer ?? new DefaultColorTransformer();
+        
         _primitiveRasterizers = GetPrimitiveRasterizers().ToDictionary(d => d.PrimitiveType);
-    }
-
-    public VectorImage()
-    {
         _primitives = new List<IVectorPrimitive>();
     }
 
-    private static IEnumerable<IPrimitiveRasterizer> GetPrimitiveRasterizers()
+    private IEnumerable<IPrimitiveRasterizer> GetPrimitiveRasterizers()
     {
-        yield return new DocumentRasterizer();
-        yield return new DefinitionListRasterizer();
-        yield return new GroupRasterizer();
-        yield return new LinkRasterizer();
-        yield return new RectangleRasterizer();
-        yield return new TextRasterizer();
-        yield return new EllipseRasterizer();
-        yield return new PathRasterizer();
-        yield return new PolygonRasterizer();
+        yield return new DocumentRasterizer(_colorTransformer);
+        yield return new DefinitionListRasterizer(_colorTransformer);
+        yield return new GroupRasterizer(_colorTransformer);
+        yield return new LinkRasterizer(_colorTransformer);
+        yield return new RectangleRasterizer(_colorTransformer);
+        yield return new TextRasterizer(_colorTransformer);
+        yield return new EllipseRasterizer(_colorTransformer);
+        yield return new PathRasterizer(_colorTransformer);
+        yield return new PolygonRasterizer(_colorTransformer);
     }
     
     public void Clear()
     {
-        _primitives.Clear();
+        if (_primitives.Any())
+        {
+            _primitives.Clear();
+            Generation++;
+        }
     }
 
-    public void Rasterize(RectangleD modelRectangle, RectangleD graphicsRectangle, Graphics g)
+    public void Rasterize(RectangleD modelRectangle, RectangleF graphicsRectangle, Graphics g)
     {
-        var zoom = Math.Min(graphicsRectangle.Width / modelRectangle.Width, graphicsRectangle.Height / modelRectangle.Height);
-        var context = new DrawingContext(modelRectangle.TopLeft, graphicsRectangle.TopLeft, zoom, RasterizePrimitives);
+        var context = new DrawingContext(modelRectangle, graphicsRectangle, RasterizePrimitives);
 
         RasterizePrimitives(_primitives, g, context);
     }
@@ -56,6 +62,9 @@ public class VectorImage : IVectorImage
     
     public RectangleD GetBoundaries()
     {
+        if (!_primitives.Any())
+            return RectangleD.Empty;
+
         var result = _primitives[0].GetBoundaries();
         foreach (var primitive in _primitives.Skip(1))
             result = result.Union(primitive.GetBoundaries());
@@ -66,5 +75,25 @@ public class VectorImage : IVectorImage
     public void Add(IVectorPrimitive primitive)
     {
         _primitives.Add(primitive);
+        Generation++;
+    }
+    
+    private class DefaultColorTransformer : IColorTransformer
+    {
+        public Pen GetPen(IVectorPrimitive primitive)
+        {
+            return new Pen(primitive.ForeColor);
+        }
+    
+        public Brush GetFillBrush(IVectorPrimitive primitive)
+        {
+            return new SolidBrush(primitive.BackColor);
+        }
+
+        public Brush GetBrush(IVectorPrimitive primitive)
+        {
+            return new SolidBrush(primitive.ForeColor);
+        }
+
     }
 }

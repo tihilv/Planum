@@ -1,26 +1,158 @@
-﻿using Avalonia.Media.Imaging;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using Bundle.Uml;
+using Language.Api.Semantic;
+using Language.Common;
+using Language.Processing;
 using Planum.Ui.Utils;
 using SvgVisualizer;
+using VectorDrawing;
+using Visualize.Api;
+using Visualize.Api.Primitives;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
+using Point = Avalonia.Point;
 
 namespace Planum.Ui.ViewModels;
 
-public class CanvasViewModel: ViewModelBase
+public class CanvasViewModel: INotifyPropertyChanged, IDisposable
 {
-    //public DrawingModel DrawingModel { get; }
+    public IInteractiveCanvas Canvas { get; }
 
-    public CanvasViewModel()
-    {
-        //DrawingModel = new DrawingModel();
-        //var svg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" contentStyleType=\"text/css\" height=\"94px\" preserveAspectRatio=\"none\" style=\"width:144px;height:94px;background:#FFFFFF;\" version=\"1.1\" viewBox=\"0 0 144 94\" width=\"144px\" zoomAndPan=\"magnify\"><defs/><g><line style=\"stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;\" x1=\"71\" x2=\"71\" y1=\"37.6094\" y2=\"57.6094\"/><rect fill=\"#E2E2F0\" height=\"31.6094\" rx=\"2.5\" ry=\"2.5\" style=\"stroke:#181818;stroke-width:0.5;\" width=\"133\" x=\"5\" y=\"5\"/><text fill=\"#000000\" font-family=\"sans-serif\" font-size=\"14\" lengthAdjust=\"spacing\" textLength=\"119\" x=\"12\" y=\"26.5332\">Not so famous Bob</text><rect fill=\"#E2E2F0\" height=\"31.6094\" rx=\"2.5\" ry=\"2.5\" style=\"stroke:#181818;stroke-width:0.5;\" width=\"133\" x=\"5\" y=\"56.6094\"/><text fill=\"#000000\" font-family=\"sans-serif\" font-size=\"14\" lengthAdjust=\"spacing\" textLength=\"119\" x=\"12\" y=\"78.1426\">Not so famous Bob</text></g></svg>";
-        //DrawingModel.UpdateModel(svg);
-    }
+    private int _width;
+    private int _height;
 
-    public Bitmap Bitmap
+    private readonly IDocumentToImagePipeline _pipeline;
+    private readonly IVectorImage _hoverVectorImage;
+    
+    private System.Drawing.Bitmap? _bitmap;
+
+    public Bitmap? Bitmap
     {
         get
         {
-            return null;
-            //return DrawingModel.CreateBitmap().ConvertToAvaloniaBitmap();
+            if (_bitmap != null)
+                _bitmap.Dispose();
+
+            if (_width > 0 && _height > 0)
+            {
+                _bitmap = new System.Drawing.Bitmap(_width, _height);
+                using (var g = Graphics.FromImage(_bitmap))
+                    Canvas.Refresh(g);
+            }
+
+            return _bitmap?.ConvertToAvaloniaBitmap();
         }
+    }
+
+    public CanvasViewModel()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var documentModel = new DocumentModel(new TextScript(GetSimpleScript()), builder);
+        VectorImage vectorImage = new VectorImage();
+        _hoverVectorImage = new VectorImage(new HightlightTransformer());
+        _pipeline = new DocumentToImageSvgPipelineFactory().Create(documentModel, vectorImage);
+        _pipeline.Changed += (sender, args) => OnBitmapChanged();
+
+        Canvas = new InteractiveCanvas(new IVectorImage[] { vectorImage, _hoverVectorImage });
+    }
+
+    private static List<String> GetSimpleScript()
+    {
+        var sb = new List<String>();
+        sb.Add("@startuml");
+        sb.Add("left to right direction");
+        sb.Add("actor \"Food Critic\" as fc");
+        sb.Add("rectangle Restaurant {");
+        sb.Add("    usecase \"Eat Food\" as UC1");
+        sb.Add("    usecase \"Pay for Food\" as UC2");
+        sb.Add("    usecase \"Drink\" as UC3");
+        sb.Add("}");
+        sb.Add("fc --> UC1");
+        sb.Add("fc --> UC2");
+        sb.Add("fc --> UC3");
+        sb.Add("@enduml");
+        return sb;
+    }
+    
+    public void Resize(double width, double height)
+    {
+        Canvas.Resize(new RectangleF(0, 0, (float)width, (float)height));
+        _width = (int)width;
+        _height = (int)height;
+        OnBitmapChanged();
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected virtual void OnBitmapChanged()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Bitmap)));
+    }
+
+    public void Zoom(Point position, Double delta)
+    {
+        Canvas.Zoom(new PointF((float)position.X, (float)position.Y), (float)delta);
+        OnBitmapChanged();
+    }
+
+    public void ZoomToExtents()
+    {
+        Canvas.ZoomToExtents();
+        OnBitmapChanged();
+    }
+
+    public void Move(Point shift)
+    {
+        Canvas.Move(new PointF((float)shift.X, (float)shift.Y));
+        OnBitmapChanged();
+    }
+
+    private ISemanticElement? _lastSelection;
+    public void SetCursor(Point newPosition)
+    {
+        var modelPoint = Canvas.ToModel(new PointF((float)newPosition.X, (float)newPosition.Y));
+        var selection = _pipeline.Select(modelPoint);
+        if (selection != _lastSelection)
+        {
+            _lastSelection = selection;
+            if (selection != null)
+            {
+                _hoverVectorImage.Clear();
+                _pipeline.DrawToImage(selection, _hoverVectorImage);
+            }
+            else
+                _hoverVectorImage.Clear();
+            
+            OnBitmapChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        _bitmap?.Dispose();
+        _pipeline.Dispose();
+    }
+}
+
+public class HightlightTransformer : IColorTransformer
+{
+    public Pen GetPen(IVectorPrimitive primitive)
+    {
+        return new Pen(Color.Aqua);
+    }
+
+    public Brush GetFillBrush(IVectorPrimitive primitive)
+    {
+        return new HatchBrush(HatchStyle.Percent10, Color.Aqua, primitive.BackColor);
+    }
+
+    public Brush GetBrush(IVectorPrimitive primitive)
+    {
+        return new HatchBrush(HatchStyle.Percent50, Color.Aqua, primitive.ForeColor);
     }
 }

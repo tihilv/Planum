@@ -13,10 +13,12 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <StackPanel>
-        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <controls:SvgCanvas DataContext="{Binding Canvas}"></controls:SvgCanvas>
-        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-    </StackPanel>
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Greeting}" HorizontalAlignment="Center"/>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Greeting}" HorizontalAlignment="Center"/>
+        <controls:SvgCanvas VerticalAlignment="Stretch" DataContext="{Binding Canvas}"></controls:SvgCanvas>
+    </DockPanel>
+    
+    
 
 </Window>

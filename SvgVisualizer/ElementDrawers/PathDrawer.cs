@@ -10,12 +10,12 @@ internal class PathDrawer: ElementDrawerBase<SvgPath>
     protected override IVectorPrimitive DoProcess(SvgPath element)
     {
         var primitive = new PathPrimitive(((SvgColourServer)element.Color).Colour);
-        Point start = Point.Empty;
+        PointD start = PointD.Empty;
         foreach (var segment in element.PathData)
         {
             if (segment is SvgMoveToSegment moveTo)
             {
-                var pt = new Point(moveTo.End.X, moveTo.End.Y);
+                var pt = new PointD(moveTo.End.X, moveTo.End.Y);
                 if (moveTo.IsRelative)
                     start = start.Add(pt);
                 else
@@ -23,7 +23,7 @@ internal class PathDrawer: ElementDrawerBase<SvgPath>
             } 
             else if (segment is SvgLineSegment line)
             {
-                var end = new Point(line.End.X, line.End.Y);
+                var end = new PointD(line.End.X, line.End.Y);
                 if (line.IsRelative)
                     end = start.Add(end);
 
@@ -32,9 +32,9 @@ internal class PathDrawer: ElementDrawerBase<SvgPath>
             }
             else if (segment is SvgCubicCurveSegment cubic)
             {
-                var pt2 = new Point(cubic.FirstControlPoint.X, cubic.FirstControlPoint.Y);
-                var pt3 = new Point(cubic.SecondControlPoint.X, cubic.SecondControlPoint.Y);
-                var pt4 = new Point(cubic.End.X, cubic.End.Y);
+                var pt2 = new PointD(cubic.FirstControlPoint.X, cubic.FirstControlPoint.Y);
+                var pt3 = new PointD(cubic.SecondControlPoint.X, cubic.SecondControlPoint.Y);
+                var pt4 = new PointD(cubic.End.X, cubic.End.Y);
                 if (cubic.IsRelative)
                 {
                     pt2 = start.Add(pt2);

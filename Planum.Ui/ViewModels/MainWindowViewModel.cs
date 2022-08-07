@@ -4,6 +4,11 @@
     {
         public string Greeting => "Welcome to Avalonia!";
 
-        public CanvasViewModel Canvas { get; } = new CanvasViewModel();
+        public CanvasViewModel Canvas { get; }
+
+        public MainWindowViewModel()
+        {
+            Canvas = new CanvasViewModel();
+        }
     }
 }
