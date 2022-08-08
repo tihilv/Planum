@@ -1,4 +1,5 @@
-﻿using Bundle.Uml.Elements;
+﻿using System.Text;
+using Bundle.Uml.Elements;
 using Language.Api;
 using Language.Api.Syntax;
 using Language.Common;
@@ -15,10 +16,7 @@ public class UmlContainerElementParser : IParser
 
     public ParseResult? Parse(Token[] tokens)
     {
-        if (tokens.Length != 3)
-            return null;
-
-        if (tokens[2].Value != "{")
+        if (!((tokens.Length == 3 && tokens[2].Value == "{") || (tokens.Length == 4 && tokens[3].Value == "{")))
             return null;
 
         UmlContainerType containerType;
@@ -27,13 +25,25 @@ public class UmlContainerElementParser : IParser
 
         containerType = (UmlContainerType)type;
 
-        return new ParseResult(new UmlContainerSyntaxElement(containerType, tokens[1].Value), UmlBundle.Name, EndParser.Instance);
+        string? url = null;
+        if (tokens.Length == 4 && tokens[2].Value.StartsWith("[[") && tokens[2].Value.EndsWith("]]"))
+            url = tokens[2].Value.Substring(2, tokens[2].Value.Length - 4).Trim();
+        
+        return new ParseResult(new UmlContainerSyntaxElement(containerType, tokens[1].Value, url), UmlBundle.Name, EndParser.Instance);
     }
 
     public SynthesizeResult? Synthesize(SyntaxElement element)
     {
         if (element is UmlContainerSyntaxElement el)
-            return new SynthesizeResult($"{el.Type.ToString().ToLower()} \"{el.Name}\" {{", new SynthesizeNewScopeResult(UmlBundle.Name, "}"));
+        {
+            var sb = new StringBuilder();
+            sb.Append($"{el.Type.ToString().ToLower()} \"{el.Name}\" ");
+            if (!string.IsNullOrEmpty(el.Url))
+                sb.Append($"[[{el.Url}]] ");
+            sb.Append('{');
+            
+            return new SynthesizeResult(sb.ToString(), new SynthesizeNewScopeResult(UmlBundle.Name, "}"));
+        }
 
         return null;
     }

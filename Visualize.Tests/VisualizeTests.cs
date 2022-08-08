@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using Bundle.Uml;
+using Bundle.Uml.Semantic;
+using Language.Api.Semantic;
 using Language.Common;
 using Language.Processing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -65,12 +67,37 @@ public class VisualizeTests
         Assert.AreEqual(400, graphicsPt1.Y);
         
         var graphicsPt2 = drawingContext.ToGraphics(new PointD(210, 120));
-        Assert.AreEqual(320, graphicsPt2.X);
-        Assert.AreEqual(410, graphicsPt2.Y);
+        Assert.AreEqual(318, graphicsPt2.X);
+        Assert.AreEqual(409, graphicsPt2.Y);
 
         var graphicsPt3 = drawingContext.ToGraphics(new PointD(110, 70));
-        Assert.AreEqual(310, graphicsPt3.X);
-        Assert.AreEqual(405, graphicsPt3.Y);
+        Assert.AreEqual(309, graphicsPt3.X);
+        Assert.AreEqual(404.5, graphicsPt3.Y);
+    }
+    
+    [TestMethod]
+    public void SelectionTest()
+    {
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+
+        var documentModel = new DocumentModel(new TextScript(GetSimpleScript()), builder);
+        var vectorImage = new VectorImage();
+        var pipeline = new DocumentToImageSvgPipelineFactory().Create(documentModel, vectorImage);
+        
+        bool finalized = false;
+        pipeline.Changed += (sender, args) =>
+        {
+            var selectedElement = pipeline.Select(new PointD(180, 120)) as UmlFigureSemanticElement;
+            Assert.AreEqual("Pay for Food", selectedElement?.Text);
+            finalized = true;
+        };
+        DateTime begin = DateTime.Now;
+        while (!finalized && (DateTime.Now - begin).TotalMilliseconds < 2000)
+            Thread.Sleep(100);
+        
+        Assert.IsTrue(finalized);
+        Refresh(vectorImage);
     }
     
     private static List<String> GetSimpleScript()

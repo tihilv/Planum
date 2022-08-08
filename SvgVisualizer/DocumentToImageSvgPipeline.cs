@@ -149,7 +149,7 @@ public class DocumentToImageSvgPipeline : IDocumentToImagePipeline
 
     public ISemanticElement? Select(PointD modelPoint)
     {
-        double bestSquare = 0;
+        double bestSquare = double.MaxValue;
         string bestUrl = string.Empty;
 
         if (_urls != null)
@@ -157,7 +157,7 @@ public class DocumentToImageSvgPipeline : IDocumentToImagePipeline
             foreach (var pair in _urls)
             {
                 var square = pair.Item1.Square;
-                if (square > bestSquare)
+                if (square < bestSquare)
                 {
                     if (pair.Item1.Contains(modelPoint))
                     {

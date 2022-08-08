@@ -54,7 +54,7 @@ public class CanvasViewModel: INotifyPropertyChanged, IDisposable
 
         var documentModel = new DocumentModel(new TextScript(GetSimpleScript()), builder);
         VectorImage vectorImage = new VectorImage();
-        _hoverVectorImage = new VectorImage(new HightlightTransformer());
+        _hoverVectorImage = new VectorImage(new HightlightTransformer(Color.Aqua));
         _pipeline = new DocumentToImageSvgPipelineFactory().Create(documentModel, vectorImage);
         _pipeline.Changed += (sender, args) => OnBitmapChanged();
 
@@ -141,18 +141,25 @@ public class CanvasViewModel: INotifyPropertyChanged, IDisposable
 
 public class HightlightTransformer : IColorTransformer
 {
+    private readonly Color _color;
+
+    public HightlightTransformer(Color color)
+    {
+        _color = color;
+    }
+
     public Pen GetPen(IVectorPrimitive primitive)
     {
-        return new Pen(Color.Aqua);
+        return new Pen(_color);
     }
 
     public Brush GetFillBrush(IVectorPrimitive primitive)
     {
-        return new HatchBrush(HatchStyle.Percent10, Color.Aqua, primitive.BackColor);
+        return new HatchBrush(HatchStyle.Percent10, _color, primitive.BackColor);
     }
 
     public Brush GetBrush(IVectorPrimitive primitive)
     {
-        return new HatchBrush(HatchStyle.Percent50, Color.Aqua, primitive.ForeColor);
+        return new HatchBrush(HatchStyle.Percent50, _color, primitive.ForeColor);
     }
 }

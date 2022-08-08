@@ -5,7 +5,7 @@ using Language.Common.Semantic;
 
 namespace Bundle.Uml.Semantic;
 
-public class UmlContainerSemanticElement: ISemanticElement, IGroupSemantic
+public class UmlContainerSemanticElement: ISemanticElement, IGroupSemantic, IUrlSemantic
 {
     private readonly UmlContainerSyntaxElement _syntaxElement;
 
@@ -19,4 +19,9 @@ public class UmlContainerSemanticElement: ISemanticElement, IGroupSemantic
     public CompositeSyntaxElement GroupSyntaxElement  => _syntaxElement;
     
     public IReadOnlyCollection<SyntaxElement> SyntaxElements => new[] { _syntaxElement };
+    public String? Url
+    {
+        get { return _syntaxElement.Url; }
+        set => _syntaxElement.Parent!.Make(_syntaxElement.With(value)).Replacing(_syntaxElement);
+    }
 }

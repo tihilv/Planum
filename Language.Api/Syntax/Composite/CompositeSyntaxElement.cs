@@ -2,8 +2,8 @@
 
 public abstract partial class CompositeSyntaxElement : SyntaxElement, ICompositeSyntaxElement
 {
-    private readonly LinkedList<SyntaxElement> _children;
-    private readonly Dictionary<SyntaxElement, LinkedListNode<SyntaxElement>> _childrenNodes;
+    private LinkedList<SyntaxElement> _children;
+    private Dictionary<SyntaxElement, LinkedListNode<SyntaxElement>> _childrenNodes;
 
     protected CompositeSyntaxElement()
     {
@@ -16,5 +16,13 @@ public abstract partial class CompositeSyntaxElement : SyntaxElement, IComposite
     public ICompositeModification Make(SyntaxElement syntaxElement)
     {
         return new CompositeModification(this, syntaxElement);
+    }
+    
+    protected T With<T>(T oldElement, T newElement) where T: CompositeSyntaxElement
+    {
+        newElement._children = _children;
+        newElement._childrenNodes = _childrenNodes;
+
+        return newElement;
     }
 }
