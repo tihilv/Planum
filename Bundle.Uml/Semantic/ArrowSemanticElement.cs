@@ -41,6 +41,15 @@ public class ArrowSemanticElement: ISemanticElement, IArrowedSemantic
     public ISemanticElement SecondSemanticElement => _secondSemanticElement;
 
     public IReadOnlyCollection<SyntaxElement> SyntaxElements => new[] { SyntaxElement };
+    public ISemanticElement GetSnapshot()
+    {
+        return new ArrowSemanticElement(_arrowUmlSyntaxElement)
+        {
+            _id = _id,
+            _firstSemanticElement = _firstSemanticElement,
+            _secondSemanticElement = _secondSemanticElement,
+        };
+    }
 
     internal void RegisterSemanticElements(ISemanticElement firstSemanticElement, ISemanticElement secondSemanticElement)
     {

@@ -5,12 +5,12 @@ namespace Bundle.Uml.Elements;
 public struct UmlFigure : IEquatable<UmlFigure>
 {
     public readonly UmlFigureType Type;
-    public readonly string Text;
+    public readonly string? Text;
     public readonly string? Stereotype;
     public readonly string? Alias;
     public readonly string? Url;
 
-    public UmlFigure(UmlFigureType type, String text, String? stereotype = null, String? alias = null, String? url = null)
+    public UmlFigure(UmlFigureType type, string? text = null, string? stereotype = null, string? alias = null, string? url = null)
     {
         Type = type;
         Text = text;
@@ -22,9 +22,15 @@ public struct UmlFigure : IEquatable<UmlFigure>
     public override String ToString()
     {
         var sb = new StringBuilder();
-        sb.Append($"({Text}: {Type})");
-        if (Alias != null)
-            sb.Append($" as {Alias}");
+
+        if (Type == UmlFigureType.NotDefined && Text == null)
+            sb.Append(Alias);
+        else
+        {
+            sb.Append($"({Text}: {Type})");
+            if (Alias != null)
+                sb.Append($" as {Alias}");
+        }
 
         if (Stereotype != null)
             sb.Append($" << {Stereotype} >>");
@@ -59,7 +65,7 @@ public struct UmlFigure : IEquatable<UmlFigure>
         unchecked
         {
             var hashCode = (int)Type;
-            hashCode = (hashCode * 397) ^ Text.GetHashCode();
+            hashCode = (hashCode * 397) ^ (Text != null ? Text.GetHashCode() : 0);
             hashCode = (hashCode * 397) ^ (Stereotype != null ? Stereotype.GetHashCode() : 0);
             hashCode = (hashCode * 397) ^ (Alias != null ? Alias.GetHashCode() : 0);
             hashCode = (hashCode * 397) ^ (Url != null ? Url.GetHashCode() : 0);

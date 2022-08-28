@@ -57,14 +57,15 @@ public class SequenceRefactoring: ISyntaxRefactoring
     
     private void RegisterFigure(Dictionary<String, UmlSyntaxElementWithPosition> elements, UmlSyntaxElement umlSyntaxElement, UmlFigure figure, int index)
     {
-        elements.TryAdd(figure.Text, new UmlSyntaxElementWithPosition(umlSyntaxElement, index));
+        if (!string.IsNullOrEmpty(figure.Text))
+            elements.TryAdd(figure.Text, new UmlSyntaxElementWithPosition(umlSyntaxElement, index));
         if (!string.IsNullOrEmpty(figure.Alias))
             elements.TryAdd(figure.Alias, new UmlSyntaxElementWithPosition(umlSyntaxElement, index));
     }
 
     private UmlSyntaxElementWithPosition? FindExistingElement(Dictionary<String, UmlSyntaxElementWithPosition> elements, UmlFigure figure)
     {
-        if (elements.TryGetValue(figure.Text, out var element))
+        if (!string.IsNullOrEmpty(figure.Text) && elements.TryGetValue(figure.Text, out var element))
             return element;
 
         if (!string.IsNullOrEmpty(figure.Alias) && elements.TryGetValue(figure.Alias, out element))

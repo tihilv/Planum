@@ -76,8 +76,9 @@ public class DocumentToImageSvgPipeline : IDocumentToImagePipeline
         using (undoManager.CreateTransaction())
         {
             foreach(var element in _documentModel.SemanticModel)
-                if (element is IUrlSemantic urlSemantic)
+                if (element is IUrlSemantic)
                 {
+                    var urlSemantic = (IUrlSemantic)element.GetSnapshot(); 
                     var url = "planum://" + index++;
                     urlSemantic.Url = url;
                     _urlsToSemantic.Add(url, element);
@@ -127,23 +128,24 @@ public class DocumentToImageSvgPipeline : IDocumentToImagePipeline
 
     private void ProcessLinks()
     {
-        _urls = new List<(RectangleD, String)>();
+        var urls = new List<(RectangleD, String)>();
         _elementToLinkPrimitive = new Dictionary<ISemanticElement, IVectorPrimitive>();
-        ProcessLinks(_vectorImage.Primitives);
+        ProcessLinks(_vectorImage.Primitives, urls);
+        _urls = urls;
     }
 
-    private void ProcessLinks(IEnumerable<IVectorPrimitive> primitives)
+    private void ProcessLinks(IEnumerable<IVectorPrimitive> primitives, List<(RectangleD, String)> urls)
     {
         foreach (var primitive in primitives)
         {
             if (primitive is LinkPrimitive link)
             {
-                _urls.Add((link.GetBoundaries(), link.Url));
+                urls.Add((link.GetBoundaries(), link.Url));
                 _elementToLinkPrimitive.Add(_urlsToSemantic[link.Url], link);
             }
 
             if (primitive is CompositePrimitiveBase composite)
-                ProcessLinks(composite.Children);
+                ProcessLinks(composite.Children, urls);
         }
     }
 

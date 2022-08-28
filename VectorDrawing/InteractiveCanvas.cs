@@ -81,35 +81,40 @@ public class InteractiveCanvas: IInteractiveCanvas
     {
         return _globalContext.ToModel(graphicsPoint);
     }
-    
+
+    private object _refreshLock = new Object();
+
     private void ProcessImage(int index, Graphics g)
     {
-        var newGeneration = _images[index].Generation;
-        if (_regenAll || _currentBitmaps[index] == null || newGeneration != _generations[index])
+        lock (_refreshLock)
         {
-            var imageWidth = (int)_graphicsRectangle.Width;
-            var imageHeight = (int)_graphicsRectangle.Height;
-
-            Bitmap? bmp;
-            if (_currentBitmaps[index] == null || _currentBitmaps[index].Width != imageWidth || _currentBitmaps[index].Height != imageHeight)
+            var newGeneration = _images[index].Generation;
+            if (_regenAll || _currentBitmaps[index] == null || newGeneration != _generations[index])
             {
-                _currentBitmaps[index]?.Dispose();
-                bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format32bppArgb);
-            }
-            else
-            {
-                bmp = _currentBitmaps[index];
-                using (var clearG = Graphics.FromImage(bmp))
-                    clearG.Clear(Color.Transparent);
+                var imageWidth = (int)_graphicsRectangle.Width;
+                var imageHeight = (int)_graphicsRectangle.Height;
+
+                Bitmap? bmp;
+                if (_currentBitmaps[index] == null || _currentBitmaps[index].Width != imageWidth || _currentBitmaps[index].Height != imageHeight)
+                {
+                    _currentBitmaps[index]?.Dispose();
+                    bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format32bppArgb);
+                }
+                else
+                {
+                    bmp = _currentBitmaps[index];
+                    using (var clearG = Graphics.FromImage(bmp))
+                        clearG.Clear(Color.Transparent);
+                }
+
+                using (var gg = Graphics.FromImage(bmp))
+                    _images[index].Rasterize(_modelRectangle, _graphicsRectangle, gg);
+
+                _currentBitmaps[index] = bmp;
+                _generations[index] = newGeneration;
             }
 
-            using (var gg = Graphics.FromImage(bmp))
-                _images[index].Rasterize(_modelRectangle, _graphicsRectangle, gg);
-
-            _currentBitmaps[index] = bmp;
-            _generations[index] = newGeneration;
+            g.DrawImageUnscaled(_currentBitmaps[index]!, (int)_graphicsRectangle.Left, (int)_graphicsRectangle.Top);
         }
-        
-        g.DrawImageUnscaled(_currentBitmaps[index]!, (int)_graphicsRectangle.Left, (int)_graphicsRectangle.Top);
     }
 }

@@ -15,9 +15,9 @@ public class UmlContainerSyntaxElement : CompositeSyntaxElement, IGroupSyntaxEle
         Url = url;
     }
 
-    public UmlContainerSyntaxElement With(string? url = null)
+    public UmlContainerSyntaxElement With(string? url = null, string? name = null)
     {
-        return With(this, new UmlContainerSyntaxElement(Type, Name, url??Url));
+        return With(this, new UmlContainerSyntaxElement(Type, name??Name, url??Url));
     }
 }
 

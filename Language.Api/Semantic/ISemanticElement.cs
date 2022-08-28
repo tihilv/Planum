@@ -7,4 +7,6 @@ public interface ISemanticElement
     public string Id { get; }
     
     public IReadOnlyCollection<SyntaxElement> SyntaxElements { get; }
+
+    public ISemanticElement GetSnapshot();
 }

@@ -13,7 +13,7 @@ public class DefaultOperationProcessor: IOperationProcessor
         _bundleBuilder = bundleBuilder;
     }
 
-    public IEnumerable<OperationDefinition> GetOperationsToExecute(ICollection<ISemanticElement> elements)
+    public IEnumerable<IOperation> GetOperationsToExecute(ICollection<ISemanticElement> elements)
     {
         foreach (var tuple in _bundleBuilder.GetOperations())
         {
@@ -21,7 +21,7 @@ public class DefaultOperationProcessor: IOperationProcessor
             {
                 if (operation.CanExecute(elements))
                 {
-                    yield return operation.Definition;
+                    yield return operation;
                     break;
                 }
             }

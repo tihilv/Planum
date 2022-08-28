@@ -23,7 +23,7 @@ public class DocumentModel: IDocumentModel
     private readonly ScriptInterpreter _scriptInterpreter;
     private readonly ISemanticConverter _semanticConverter;
     private readonly IRefactoringManager _refactoringManager;
-
+    
     public IScript GetScript()
     {
         _scriptInterpreter.UpdateScript();
@@ -57,8 +57,12 @@ public class DocumentModel: IDocumentModel
 
     private void CalculateModel()
     {
-        _scriptInterpreter.UpdateSyntaxModel();
-        _syntaxModel = _scriptInterpreter.RootSyntaxElement;
+        if (_syntaxModel == null)
+        {
+            _scriptInterpreter.UpdateSyntaxModel();
+            _syntaxModel = _scriptInterpreter.RootSyntaxElement;
+        }
+
         _semanticModel = _semanticConverter.GetSemanticElements(_syntaxModel).ToArray();
 
         OnChanged();

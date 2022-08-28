@@ -50,13 +50,16 @@ namespace Planum.Ui.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            if (e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed)
+            var currentPoint = e.GetCurrentPoint(this);
+            if (currentPoint.Properties.IsMiddleButtonPressed)
             {
                 if (e.ClickCount == 2)
                     ViewModel?.ZoomToExtents();
                 else
                     _moving = true;
             }
+            else if (currentPoint.Properties.IsLeftButtonPressed)
+                ViewModel?.SelectByPoint(currentPoint.Position);
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)

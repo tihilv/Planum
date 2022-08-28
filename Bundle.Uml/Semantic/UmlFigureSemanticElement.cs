@@ -8,13 +8,13 @@ namespace Bundle.Uml.Semantic;
 public class UmlFigureSemanticElement : ISemanticElement, ITextedSemantic, IAliasedSemantic, IGroupableSemantic, IUrlSemantic
 {
     private readonly List<Usage> _usages;
-    private string _text;
+    private string? _text;
     private string? _alias;
     private string? _url;
 
     public List<Usage> Usages => _usages;
 
-    public String Text
+    public String? Text
     {
         get { return _text; }
         set { SetText(value); }
@@ -34,6 +34,17 @@ public class UmlFigureSemanticElement : ISemanticElement, ITextedSemantic, IAlia
 
     public String Id => _alias ?? _text;
     public IReadOnlyCollection<SyntaxElement> SyntaxElements => Usages.Select(u => u.SyntaxElement).ToArray();
+    public ISemanticElement GetSnapshot()
+    {
+        var result = new UmlFigureSemanticElement(_text)
+        {
+            _alias = _alias,
+            _text = _text,
+            _url = _url,
+        };
+        result._usages.AddRange(_usages.Select(u=>u.GetSnapshot()));
+        return result;
+    }
 
 
     public UmlFigureSemanticElement(String name)
@@ -49,13 +60,14 @@ public class UmlFigureSemanticElement : ISemanticElement, ITextedSemantic, IAlia
         _url = figure.Url ?? _url;
     }
 
-    internal void RegisterAlias(string name, string alias)
+    internal void RegisterAlias(string? name, string alias)
     {
-        _text = name;
+        if (name != null)
+            _text = name;
         _alias = alias;
     }
 
-    private void SetText(String newText)
+    private void SetText(string? newText)
     {
         foreach (var usage in Usages)
         {
@@ -150,6 +162,11 @@ public class UmlFigureSemanticElement : ISemanticElement, ITextedSemantic, IAlia
         {
             SyntaxElement = syntaxElement;
             Figure = figure;
+        }
+
+        public Usage GetSnapshot()
+        {
+            return new Usage(SyntaxElement, Figure);
         }
     }
 

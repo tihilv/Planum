@@ -30,7 +30,7 @@ public class UmlArrowTransfer: IFinishableSyntaxToSemanticTransfer
         {
             var contextData = context.GetData<UmlContextData>();
             
-            arrowSemanticElement.RegisterSemanticElements(contextData.GetSemanticElement(arrowSemanticElement.SyntaxElement.FirstFigure.Text), contextData.GetSemanticElement(arrowSemanticElement.SyntaxElement.SecondFigure!.Value.Text));
+            arrowSemanticElement.RegisterSemanticElements(contextData.GetSemanticElement(arrowSemanticElement.SyntaxElement.FirstFigure), contextData.GetSemanticElement(arrowSemanticElement.SyntaxElement.SecondFigure!.Value));
         }
         return true;
     }

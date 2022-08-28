@@ -17,32 +17,40 @@ internal class UmlContextData
     public UmlFigureSemanticElement? Register(UmlSyntaxElement uml, UmlFigure figure)
     {
         UmlFigureSemanticElement? result = null;
-        if (!_figures.TryGetValue(figure.Text, out var semanticElement))
+        UmlFigureSemanticElement? semanticElementByText = null;
+        if (figure.Text != null)
         {
-            semanticElement = new UmlFigureSemanticElement(figure.Text);
-            _figures.Add(figure.Text, semanticElement);
-            result = semanticElement;
-        }
+            if (!_figures.TryGetValue(figure.Text, out semanticElementByText))
+            {
+                semanticElementByText = new UmlFigureSemanticElement(figure.Text);
+                _figures.Add(figure.Text, semanticElementByText);
+                result = semanticElementByText;
+            }
 
-        semanticElement.Register(uml, figure);
+            semanticElementByText.Register(uml, figure);
+        }
 
         if (figure.Alias != null)
         {
             if (_figures.TryGetValue(figure.Alias, out var semanticElementForAlias))
             {
                 semanticElementForAlias.RegisterAlias(figure.Text, figure.Alias);
-                    
-                foreach (var usage in semanticElement.Usages)
-                    semanticElementForAlias.Register(usage.SyntaxElement, usage.Figure);
 
-                _elementsToDelete.Add(semanticElement);
+                if (semanticElementByText != null)
+                {
+                    foreach (var usage in semanticElementByText.Usages)
+                        semanticElementForAlias.Register(usage.SyntaxElement, usage.Figure);
 
-                _figures[figure.Text] = semanticElementForAlias;
+                    _elementsToDelete.Add(semanticElementByText);
+                    _figures[figure.Text] = semanticElementForAlias;
+                }
+                else
+                    semanticElementForAlias.Register(uml, figure);
             }
-            else
+            else if (semanticElementByText != null)
             {
-                semanticElement.RegisterAlias(figure.Text, figure.Alias);
-                _figures.Add(figure.Alias, semanticElement);
+                semanticElementByText.RegisterAlias(figure.Text, figure.Alias);
+                _figures.Add(figure.Alias, semanticElementByText);
             }
         }
 
@@ -54,8 +62,8 @@ internal class UmlContextData
         return _elementsToDelete.Contains(semanticElement);
     }
 
-    public UmlFigureSemanticElement GetSemanticElement(string text)
+    public UmlFigureSemanticElement GetSemanticElement(UmlFigure figure)
     {
-        return _figures[text];
+        return _figures[figure.Text ?? figure.Alias];
     }
 }

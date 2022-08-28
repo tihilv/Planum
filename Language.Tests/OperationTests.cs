@@ -31,6 +31,7 @@ public class OperationTests
 
         var otherFcName = "Not a food critic";
         
+        Assert.AreEqual(SimpleTestSyntaxModel.fcName, ChangeTextOperation.Instance.GetValue(result[0]));
         ChangeTextOperation.Instance.Execute(result, new [] {result[0]}, new [] {otherFcName});
         result = semanticConverter.GetSemanticElements(model.rootElement).ToArray();
         
@@ -40,6 +41,7 @@ public class OperationTests
         Assert.IsNotNull(fcDefSem);
         Assert.AreEqual(otherFcName, fcDefSem.Text);
         Assert.AreEqual(SimpleTestSyntaxModel.fcAlias, fcDefSem.Alias);
+        Assert.AreEqual(otherFcName, ChangeTextOperation.Instance.GetValue(fcDefSem));
     }
     
     [TestMethod]

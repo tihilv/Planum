@@ -23,7 +23,7 @@ public class UmlParserTests
         Assert.IsNull(umlElement.Arrow);
         Assert.IsNull(umlElement.SecondFigure);
         Assert.IsNull(umlElement.Comment);
-        Assert.AreEqual(new UmlFigure(UmlFigureType.Actor, "User", "Human", null),umlElement.FirstFigure);
+        Assert.AreEqual(new UmlFigure(UmlFigureType.NotDefined, null, "Human", "User"),umlElement.FirstFigure);
     }
     
     [TestMethod]
@@ -53,8 +53,20 @@ public class UmlParserTests
         Assert.IsNotNull(umlElement.Arrow);
         Assert.IsNotNull(umlElement.SecondFigure);
         Assert.IsNotNull(umlElement.Comment);
-        Assert.AreEqual(new UmlFigure(UmlFigureType.Actor, "User"),umlElement.FirstFigure);
+        Assert.AreEqual(new UmlFigure(UmlFigureType.NotDefined, alias: "User"),umlElement.FirstFigure);
         Assert.AreEqual(new Arrow(ArrowShape.No, ArrowShape.Arrow, 2, LineType.Plain, Direction.Undefined),umlElement.Arrow);
         Assert.AreEqual(new UmlFigure(UmlFigureType.UseCase, "Use the application"),umlElement.SecondFigure);
+    }
+    
+    [TestMethod]
+    public void SingleNotDefinedTypeTest()
+    {
+        string value = "fc --> uc1";
+        var line = new ScriptLine(1, value);
+        var tokens = UmlTokenizer.Instance.GetTokens(line).ToArray();
+        var umlElement = UmlElementParser.Instance.Parse(tokens)?.SyntaxElement as UmlSyntaxElement;
+        Assert.IsNotNull(umlElement);
+        Assert.IsNotNull(umlElement.FirstFigure);
+        Assert.AreEqual(new UmlFigure(UmlFigureType.NotDefined, alias: "fc"),umlElement.FirstFigure);
     }
 }

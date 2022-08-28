@@ -16,7 +16,7 @@
     <DockPanel>
         <TextBlock DockPanel.Dock="Top" Text="{Binding Greeting}" HorizontalAlignment="Center"/>
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding Greeting}" HorizontalAlignment="Center"/>
-        <controls:SvgCanvas VerticalAlignment="Stretch" DataContext="{Binding Canvas}"></controls:SvgCanvas>
+        <controls:DocumentControl VerticalAlignment="Stretch" DataContext="{Binding Document}"></controls:DocumentControl>
     </DockPanel>
     
     

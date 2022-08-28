@@ -58,7 +58,8 @@ public class DuplicateReferencesRemovalRefactoring: ISyntaxRefactoring
 
     private void RegisterFigure(Dictionary<String, Int32> elementPositions, UmlFigure figure, Int32 index)
     {
-        elementPositions.TryAdd(figure.Text, index);
+        if (!string.IsNullOrEmpty(figure.Text))
+            elementPositions.TryAdd(figure.Text, index);
         if (!string.IsNullOrEmpty(figure.Alias))
             elementPositions.TryAdd(figure.Alias, index);
     }

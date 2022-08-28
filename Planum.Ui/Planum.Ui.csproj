@@ -33,4 +33,10 @@
       <ProjectReference Include="..\SvgVisualizer\SvgVisualizer.csproj" />
       <ProjectReference Include="..\VectorDrawing\VectorDrawing.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <Compile Update="Controls\PropertyGrids\PropertyGrid.axaml.cs">
+        <DependentUpon>PropertyGrid.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
 </Project>

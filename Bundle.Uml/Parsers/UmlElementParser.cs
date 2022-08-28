@@ -81,14 +81,19 @@ public class UmlElementParser : IParser
 
     private void SynthesizeFigure(UmlFigure figure, StringBuilder sb)
     {
-        sb.Append(figure.Type.ToString().ToLower());
-        sb.Append(" \"");
-        sb.Append(figure.Text);
-        sb.Append("\"");
-        if (!string.IsNullOrEmpty(figure.Alias))
-        {
-            sb.Append(" as ");
+        if (figure.Type == UmlFigureType.NotDefined && figure.Text == null)
             sb.Append(figure.Alias);
+        else
+        {
+            sb.Append(figure.Type.ToString().ToLower());
+            sb.Append(" \"");
+            sb.Append(figure.Text);
+            sb.Append("\"");
+            if (!string.IsNullOrEmpty(figure.Alias))
+            {
+                sb.Append(" as ");
+                sb.Append(figure.Alias);
+            }
         }
 
         if (!string.IsNullOrEmpty(figure.Stereotype))
@@ -111,7 +116,7 @@ public class UmlElementParser : IParser
         if (tokens.Length <= index)
             return null;
 
-        UmlFigureType figureType = UmlFigureType.Actor;
+        UmlFigureType figureType = UmlFigureType.NotDefined;
         
         if (Enum.TryParse(typeof(UmlFigureType), tokens[index].Value, true, out var value))
         {
@@ -159,8 +164,15 @@ public class UmlElementParser : IParser
             url = tokens[index].Value.Substring(2, tokens[index].Value.Length - 4).Trim();
             index++;
         }
+
+        if (!figureName.StartsWith("\"") && alias == null && figureType == UmlFigureType.NotDefined)
+        {
+            alias = figureName;
+            figureName = null;
+        }
+        else
+            figureName = figureName.Trim('"');
         
-        figureName = figureName.Trim('"');
         return new UmlFigure(figureType, figureName, stereotype, alias, url);
     }
 

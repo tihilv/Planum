@@ -4,7 +4,7 @@ using Language.Common.Semantic;
 
 namespace Language.Common.Operations;
 
-public class ChangeAliasOperation : IOperation
+public class ChangeAliasOperation : IPropertyOperation
 {
     public static readonly IOperation Instance = new ChangeAliasOperation();
 
@@ -26,5 +26,11 @@ public class ChangeAliasOperation : IOperation
         foreach (var selectedElement in selectedElements)
             if (selectedElement is IAliasedSemantic textedElement)
                 textedElement.Alias = newAlias;
+    }
+
+    public Type PropertyType => typeof(string);
+    public Object GetValue(ISemanticElement element)
+    {
+        return ((IAliasedSemantic)element).Alias;
     }
 }

@@ -2,6 +2,7 @@
 
 public enum UmlFigureType: byte
 {
+    NotDefined = 0,
     Participant = 1,
     Actor = 2, // :a:
     Boundary = 3,

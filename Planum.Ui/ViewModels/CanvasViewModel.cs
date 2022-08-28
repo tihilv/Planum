@@ -2,16 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using Bundle.Uml;
+using System.Linq;
 using Language.Api.Semantic;
-using Language.Common;
 using Language.Processing;
 using Planum.Ui.Utils;
 using SvgVisualizer;
 using VectorDrawing;
 using Visualize.Api;
-using Visualize.Api.Primitives;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Point = Avalonia.Point;
 
@@ -20,12 +17,15 @@ namespace Planum.Ui.ViewModels;
 public class CanvasViewModel: INotifyPropertyChanged, IDisposable
 {
     public IInteractiveCanvas Canvas { get; }
+    
+    public List<ISemanticElement> SelectedElements { get; }
 
     private int _width;
     private int _height;
 
     private readonly IDocumentToImagePipeline _pipeline;
     private readonly IVectorImage _hoverVectorImage;
+    private readonly IVectorImage _selectVectorImage;
     
     private System.Drawing.Bitmap? _bitmap;
 
@@ -47,38 +47,18 @@ public class CanvasViewModel: INotifyPropertyChanged, IDisposable
         }
     }
 
-    public CanvasViewModel()
+    public CanvasViewModel(DocumentModel documentModel)
     {
-        var builder = new DefaultBundleBuilder();
-        builder.RegisterBundle(UmlBundle.Instance);
-
-        var documentModel = new DocumentModel(new TextScript(GetSimpleScript()), builder);
         VectorImage vectorImage = new VectorImage();
-        _hoverVectorImage = new VectorImage(new HightlightTransformer(Color.Aqua));
+        _hoverVectorImage = new VectorImage(new HighlightTransformer(Color.Aqua));
+        _selectVectorImage = new VectorImage(new HighlightTransformer(Color.Turquoise));
         _pipeline = new DocumentToImageSvgPipelineFactory().Create(documentModel, vectorImage);
         _pipeline.Changed += (sender, args) => OnBitmapChanged();
 
-        Canvas = new InteractiveCanvas(new IVectorImage[] { vectorImage, _hoverVectorImage });
+        Canvas = new InteractiveCanvas(new IVectorImage[] { vectorImage, _hoverVectorImage, _selectVectorImage });
+        SelectedElements = new List<ISemanticElement>();
     }
 
-    private static List<String> GetSimpleScript()
-    {
-        var sb = new List<String>();
-        sb.Add("@startuml");
-        sb.Add("left to right direction");
-        sb.Add("actor \"Food Critic\" as fc");
-        sb.Add("rectangle Restaurant {");
-        sb.Add("    usecase \"Eat Food\" as UC1");
-        sb.Add("    usecase \"Pay for Food\" as UC2");
-        sb.Add("    usecase \"Drink\" as UC3");
-        sb.Add("}");
-        sb.Add("fc --> UC1");
-        sb.Add("fc --> UC2");
-        sb.Add("fc --> UC3");
-        sb.Add("@enduml");
-        return sb;
-    }
-    
     public void Resize(double width, double height)
     {
         Canvas.Resize(new RectangleF(0, 0, (float)width, (float)height));
@@ -94,6 +74,11 @@ public class CanvasViewModel: INotifyPropertyChanged, IDisposable
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Bitmap)));
     }
 
+    protected virtual void OnSelectionChanged()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedElements)));
+    }
+    
     public void Zoom(Point position, Double delta)
     {
         Canvas.Zoom(new PointF((float)position.X, (float)position.Y), (float)delta);
@@ -132,34 +117,33 @@ public class CanvasViewModel: INotifyPropertyChanged, IDisposable
         }
     }
 
+    public void SelectByPoint(Point position)
+    {
+        var modelPoint = Canvas.ToModel(new PointF((float)position.X, (float)position.Y));
+        var selection = _pipeline.Select(modelPoint);
+        bool changed = SelectedElements.Any() || selection != null;
+        if (changed)
+        {
+            SelectedElements.Clear();
+            if (selection != null)
+                SelectedElements.Add(selection);
+            
+            OnSelectionChanged();
+        }
+
+        if (changed)
+        {
+            _selectVectorImage.Clear();
+            foreach (var selectedElement in SelectedElements)
+                _pipeline.DrawToImage(selectedElement, _selectVectorImage);
+            
+            OnBitmapChanged();
+        }
+    }
+
     public void Dispose()
     {
         _bitmap?.Dispose();
         _pipeline.Dispose();
-    }
-}
-
-public class HightlightTransformer : IColorTransformer
-{
-    private readonly Color _color;
-
-    public HightlightTransformer(Color color)
-    {
-        _color = color;
-    }
-
-    public Pen GetPen(IVectorPrimitive primitive)
-    {
-        return new Pen(_color);
-    }
-
-    public Brush GetFillBrush(IVectorPrimitive primitive)
-    {
-        return new HatchBrush(HatchStyle.Percent10, _color, primitive.BackColor);
-    }
-
-    public Brush GetBrush(IVectorPrimitive primitive)
-    {
-        return new HatchBrush(HatchStyle.Percent50, _color, primitive.ForeColor);
     }
 }

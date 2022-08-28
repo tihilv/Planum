@@ -4,9 +4,9 @@ using Language.Common.Semantic;
 
 namespace Language.Common.Operations;
 
-public class ChangeTextOperation : IOperation
+public class ChangeTextOperation : IPropertyOperation
 {
-    public static readonly IOperation Instance = new ChangeTextOperation();
+    public static readonly IPropertyOperation Instance = new ChangeTextOperation();
 
     private ChangeTextOperation()
     {
@@ -26,5 +26,11 @@ public class ChangeTextOperation : IOperation
         foreach (var selectedElement in selectedElements)
             if (selectedElement is ITextedSemantic textedElement)
                 textedElement.Text = newText;
+    }
+
+    public Type PropertyType => typeof(string);
+    public Object GetValue(ISemanticElement element)
+    {
+        return ((ITextedSemantic)element).Text;
     }
 }

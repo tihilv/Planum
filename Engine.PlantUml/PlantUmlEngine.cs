@@ -40,7 +40,8 @@ public class PlantUmlEngine: IEngine
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
         startInfo.UseShellExecute = false;
-
+        startInfo.CreateNoWindow = true;
+        
         process.Start();
 
         _runningProcess = process;

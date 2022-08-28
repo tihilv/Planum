@@ -39,10 +39,10 @@ public class ScriptParsingTests
         Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.UseCase, "Eat Food", null, "UC1")), (UmlSyntaxElement)restaurantChildren[0]);
         Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.UseCase, "Pay for Food", null, "UC2")), (UmlSyntaxElement)restaurantChildren[1]);
         Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.UseCase, "Drink", null, "UC3")), (UmlSyntaxElement)restaurantChildren[2]);
-        
-        Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, "fc"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Actor, "UC1")), (UmlSyntaxElement)rootChildren[3]);
-        Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, "fc"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Actor, "UC2")), (UmlSyntaxElement)rootChildren[4]);
-        Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, "fc"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.Actor, "UC3")), (UmlSyntaxElement)rootChildren[5]);
+
+        Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.NotDefined, alias: "fc"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.NotDefined, alias: "UC1")), (UmlSyntaxElement)rootChildren[3]);
+        Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.NotDefined, alias: "fc"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.NotDefined, alias: "UC2")), (UmlSyntaxElement)rootChildren[4]);
+        Assert.AreEqual(new UmlSyntaxElement(new UmlFigure(UmlFigureType.NotDefined, alias: "fc"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 2), new UmlFigure(UmlFigureType.NotDefined, alias: "UC3")), (UmlSyntaxElement)rootChildren[5]);
     }
     
     [TestMethod]
@@ -93,6 +93,34 @@ public class ScriptParsingTests
         ethalon.Add("  actor \"Actor1\" .r..> component \"Component1\"");
         ethalon.Add("  actor \"Actor1\" --> component \"Component2\"");
         ethalon.Add(" }");
+        ethalon.Add("@enduml");
+        Assert.IsTrue(Enumerable.SequenceEqual(ethalon, resultLines.Select(r=>r.Value)));
+    }
+    
+    [TestMethod]
+    public void SecondLineAliasSynthesizeTest()
+    {
+        var sb = new []{"@startuml", "@enduml"};
+        var script = new TextScript(sb);
+        
+        var builder = new DefaultBundleBuilder();
+        builder.RegisterBundle(UmlBundle.Instance);
+        var interpreter = new ScriptInterpreter(script, builder);
+        interpreter.UpdateSyntaxModel();
+
+        var umlRoot = (UmlRootSyntaxElement)interpreter.RootSyntaxElement.Children.Single();
+
+        umlRoot.Make(new UmlSyntaxElement(new UmlFigure(UmlFigureType.Actor, "Actor1", alias:"a1"))).Last();
+        umlRoot.Make(new UmlSyntaxElement(new UmlFigure(UmlFigureType.NotDefined, alias: "a1"), new Arrow(ArrowShape.No, ArrowShape.Arrow, 3, LineType.Dash, Direction.Right), new UmlFigure(UmlFigureType.Component, "Component1"))).Last();
+        
+        interpreter.UpdateScript();
+        var resultLines = script.GetLines().ToArray();
+        Assert.AreEqual(4, resultLines.Length);
+        
+        var ethalon = new List<String>();
+        ethalon.Add("@startuml");
+        ethalon.Add(" actor \"Actor1\" as a1");
+        ethalon.Add(" a1 .r..> component \"Component1\"");
         ethalon.Add("@enduml");
         Assert.IsTrue(Enumerable.SequenceEqual(ethalon, resultLines.Select(r=>r.Value)));
     }
